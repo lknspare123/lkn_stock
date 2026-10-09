@@ -1,0 +1,5 @@
+{% extends "print_base.html" %}{% block title %}{{ g.info.title }}{% endblock %}{% block body %}
+<h1>{{ g.info.title }}</h1><div class="sub">{{ g.info.entity }}៖ <b>{{ g.name }}</b> · {{ g.start|dmy }} ដល់ {{ g.end|dmy }}</div>
+<div class="meta"><div><b>វិក្កយបត្រ</b>{{ g.invoice_count }}</div><div><b>ទឹកប្រាក់សរុប</b>{{ g.total|currency }}</div><div><b>បានទូទាត់</b><span class="paid">{{ g.paid|currency }}</span></div><div><b>មិនទាន់ទូទាត់</b><span class="due">{{ g.unpaid|currency }}</span></div></div>
+{% for iv in g.invoices %}<table style="margin-top:14px"><thead><tr><th colspan="5">{{ g.info.code_label }} {{ iv.code }} · {{ iv.date[:10]|dmy }} · {{ iv.status }} · {{ iv.total|currency }}</th></tr><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="r">បរិមាណ</th><th class="r">{{ g.info.price_label }}</th><th class="r">សរុប</th></tr></thead><tbody>
+{% for l in iv.lines %}<tr><td>{{ l.item_code }}</td><td>{{ l.name }}</td><td class="r">{{ l.qty|qty }}</td><td class="r">{{ l.price|currency }}</td><td class="r">{{ l.total|currency }}</td></tr>{% endfor %}</tbody></table>{% endfor %}{% endblock %}

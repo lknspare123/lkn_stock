@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Sales{% endblock %}{% block content %}
+<h1>Sales <span class="sp"></span><a class="btn" href="{{ url_for('sale_new') }}">+ New sale</a></h1>
+<form class="bar" method="get"><div><label>From</label><input type="date" name="start" value="{{ start }}"></div><div><label>To</label><input type="date" name="end" value="{{ end }}"></div><button class="btn sec">Filter</button></form>
+<div class="tw"><table><thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Sender tel</th><th>Receiver tel</th><th class="num">Total</th></tr></thead><tbody>
+{% for r in rows %}<tr><td><a href="{{ url_for('sale_detail', code=r.sale_code) }}">{{ r.sale_code }}</a></td><td>{{ r.sale_date|dmy }}</td><td>{{ r.customer_name }}</td><td>{{ r.sender_tel }}</td><td>{{ r.receiver_tel }}</td><td class="num">{{ r.grand_total|currency }}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">No sales in this range.</td></tr>{% endfor %}</tbody></table></div>
+<div class="total-box">Total: {{ total|currency }}</div>
+{% endblock %}

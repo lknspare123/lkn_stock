@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Login · LKN Stock{% endblock %}
+{% block content %}
+<form method="post" class="card login">
+  <img class="login-logo" src="{{ url_for('static', filename='logo.png') }}" alt="LKN Spare Part">
+  <h1>LKN Stock</h1><p>Sign in to continue</p>
+  <label>Password</label>
+  <input type="password" name="password" autofocus required style="width:100%;margin-bottom:12px">
+  <button class="btn" style="width:100%">Sign in</button>
+</form>
+{% endblock %}

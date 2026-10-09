@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}New Sale{% endblock %}{% block mode %}sale{% endblock %}{% block content %}
+<h1>New sale</h1>
+<div class="card"><div class="fg">
+  <div><label>Customer</label><input id="customer" data-field="customer" list="cus"><datalist id="cus">{% for s in customers %}<option value="{{ s }}">{% endfor %}</datalist></div>
+  <div><label>Date</label><input type="date" data-field="date" value="{{ today }}"></div>
+  <div><label>Sender tel</label><input data-field="sender_tel"></div>
+  <div><label>Receiver tel</label><input data-field="receiver_tel"></div>
+  <div><label>Notes</label><input data-field="notes"></div></div></div>
+<div class="tw"><table id="lines"><thead><tr><th style="min-width:280px">Item</th><th class="num">In stock</th><th style="width:100px">Qty</th><th style="width:120px">Cost ($)</th><th style="width:120px">Sell ($)</th><th class="num">Total</th><th></th></tr></thead><tbody></tbody></table></div>
+<datalist id="itemlist"></datalist>
+<div class="bar" style="margin-top:12px"><button type="button" class="btn sec" id="add-row">+ Add line</button></div>
+<div class="total-box">Grand total: <span id="grand">$0.00</span></div>
+<button class="btn" id="save">Save</button> <a class="btn sec" href="{{ url_for('sales_list') }}">Cancel</a>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

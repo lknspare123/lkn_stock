@@ -1,0 +1,8 @@
+{% extends "print_base.html" %}{% block title %}{{ t.transfer_code }}{% endblock %}{% block body %}
+<h1>វិក្កយប័ត្រផ្ញើឥវ៉ាន់ទៅសាខា</h1><div class="sub">BRANCH TRANSFER RECEIPT</div>
+<div class="meta"><div><b>លេខប័ណ្ណ</b>{{ t.transfer_code }}</div><div><b>កាលបរិច្ឆេទ</b>{{ t.created_at[:10]|dmy }}</div>
+<div><b>សាខាគោលដៅ</b>{{ t.branch_name }}</div><div><b>អ្នកដឹកជញ្ជូន</b>{{ t.driver_name or '–' }}</div><div><b>ស្ថានភាព</b>{{ pay.label }}</div><div><b>កំណត់សម្គាល់</b>{{ t.note or '–' }}</div></div>
+<table><thead><tr><th>#</th><th>កូដ</th><th>ឈ្មោះទំនិញ</th><th class="r">បរិមាណ</th><th class="r">ថ្លៃដើម</th><th class="r">តម្លៃលក់</th><th>សម្គាល់</th><th class="r">សរុប</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ loop.index }}</td><td>{{ l.item_code }}</td><td>{{ l.name_khmer or l.name_english }}</td><td class="r">{{ l.qty|qty }}</td><td class="r">{{ l.unit_cost|currency }}</td><td class="r">{{ l.sell_price|currency }}</td><td>{{ l.remark }}</td><td class="r">{{ l.total_cost|currency }}</td></tr>{% endfor %}</tbody></table>
+<div class="tot"><div class="g"><span>ថ្លៃដើមសរុប</span><span>{{ total|currency }}</span></div><div class="paid"><span>បានបង់</span><span>{{ pay.paid|currency }}</span></div><div class="due"><span>នៅខ្វះ</span><span>{{ pay.balance|currency }}</span></div></div>
+<div class="foot"><div>អ្នកផ្ញើ</div><div>អ្នកដឹកជញ្ជូន</div><div>អ្នកទទួលសាខា</div></div>{% endblock %}

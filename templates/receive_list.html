@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Stock Receive{% endblock %}{% block content %}
+<h1>Stock Receive <span class="sp"></span><a class="btn" href="{{ url_for('receive_new') }}">+ New receive</a></h1>
+<form class="bar" method="get"><div><label>From</label><input type="date" name="start" value="{{ start }}"></div><div><label>To</label><input type="date" name="end" value="{{ end }}"></div><button class="btn sec">Filter</button></form>
+<div class="tw"><table><thead><tr><th>Invoice</th><th>Date</th><th>Distributor</th><th>Notes</th><th class="num">Total</th></tr></thead><tbody>
+{% for r in rows %}<tr><td><a href="{{ url_for('receive_detail', code=r.invoice_code) }}">{{ r.invoice_code }}</a></td><td>{{ r.receive_date|dmy }}</td><td>{{ r.distributor_name }}</td><td class="muted">{{ r.notes }}</td><td class="num">{{ r.total_cost|currency }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No receives in this range.</td></tr>{% endfor %}</tbody></table></div>
+<div class="total-box">Total: {{ total|currency }}</div>
+{% endblock %}

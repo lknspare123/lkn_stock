@@ -1,0 +1,86 @@
+<!doctype html>
+{#
+  print_stickers.html — A4 sticker sheets, 10 stickers per page (2 columns x 5 rows).
+    kind = customer : the customer's name + phone number(s) on a coloured card, repeated 10 times
+    kind = fragile  : ប្រយ័ត្នបាក់បែក, repeated 10 times (red outline or solid black)
+  Variables come from app.py -> sales_stickers():
+    kind, name, phones, pages, margin, guides, name_mm, phone_mm, style, english, brand, shop, c1 (main colour), c2 (dark), c3 (tint)
+#}
+<html lang="km"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% if kind == 'fragile' %}ស្ទីគ័របាក់បែក{% else %}ស្ទីគ័រអតិថិជន{% if name %} - {{ name }}{% endif %}{% endif %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&family=Noto+Sans+Khmer:wght@400;600;700;900&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+body{margin:0;background:#e5e7eb;color:#000;font-family:"Noto Sans Khmer","Siemreap","Inter",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* ── screen toolbar (hidden when printing) ── */
+.toolbar{position:sticky;top:0;z-index:5;background:#1e293b;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toolbar button{background:#2563eb;color:#fff;border:0;border-radius:6px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer}
+.toolbar span{opacity:.75;font-size:12px}
+
+/* ── A4 page: 2 x 5 grid, margin comes from the dialog ── */
+.sheets{display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px;overflow:auto}
+.page{width:210mm;height:297mm;flex:none;background:#fff;padding:{{ margin }}mm;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,1fr);overflow:hidden;break-after:page;page-break-after:always;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.cell{display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:2.5mm 4mm;min-width:0;min-height:0;{% if guides %}outline:.25mm dashed #9ca3af;outline-offset:-.13mm;{% endif %}}
+.cell.cust{padding:1.6mm}
+
+/* ── customer sticker: coloured card ── */
+.card{--c:{{ c1 }};--c2:{{ c2 }};--tint:{{ c3 }};width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:.8mm solid var(--c);border-radius:3.5mm}
+.band{flex:none;height:11mm;display:flex;align-items:center;justify-content:space-between;padding:0 3.5mm;color:#fff;background:linear-gradient(100deg,var(--c) 0%,var(--c2) 100%)}
+.brand{display:flex;align-items:center;gap:2mm;min-width:0}
+.brand img{width:7.6mm;height:7.6mm;border-radius:1.7mm;background:#fff;object-fit:contain;padding:.4mm;flex:none}
+.brand b{font-family:"Inter","Noto Sans Khmer",sans-serif;font-weight:800;font-size:4.2mm;letter-spacing:.25mm;white-space:nowrap}
+.to{font-size:3.3mm;font-weight:700;opacity:.95;white-space:nowrap;border:.3mm solid rgba(255,255,255,.7);border-radius:99px;padding:.3mm 2.2mm}
+.info{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2mm;padding:2mm 4mm;background:linear-gradient(180deg,#fff 0%,var(--tint) 100%)}
+.info>*{flex:none;max-width:100%}
+.name{color:var(--c2);font-weight:800;line-height:1.3;text-align:center;word-break:break-word;font-size:{{ name_mm }}mm}
+.pill{display:inline-flex;align-items:center;gap:.45em;background:var(--c);color:#fff;border-radius:99px;padding:.25em .95em;font-family:"Inter","Noto Sans Khmer",sans-serif;font-weight:800;letter-spacing:.2mm;line-height:1.15;white-space:nowrap;font-size:{{ phone_mm }}mm}
+.pill svg{width:.95em;height:.95em;flex:none}
+
+/* ── fragile sticker ── */
+.frag{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:4mm;border-radius:3mm;padding:2mm 3mm}
+.frag svg{width:24mm;height:24mm;flex:none}
+.frag .txt{text-align:center;line-height:1.15}
+.frag .txt b{display:block;font-size:13.5mm;font-weight:900;white-space:nowrap}
+.frag .txt small{display:block;font-family:"Inter",sans-serif;font-weight:800;letter-spacing:1.2mm;font-size:4.5mm;margin-top:1mm}
+.frag.red{border:1.4mm solid #dc2626;color:#dc2626}
+.frag.black{background:#000;color:#fff;border:1.4mm solid #000}
+
+@media print{body{background:#fff}.toolbar{display:none}.sheets{display:block;padding:0;overflow:visible}.page{box-shadow:none}.page:last-child{break-after:auto;page-break-after:auto}}
+</style></head><body>
+<div class="toolbar"><button onclick="window.print()">🖨 Print / Save as PDF</button>
+<span>{{ pages }} ទំព័រ A4 × ១០ ស្ទីគ័រ · ក្នុងផ្ទាំងបោះពុម្ព សូមជ្រើស <b>Paper: A4</b> · <b>Margins: None</b> · Scale: 100% · បើកជម្រើស <b>Background graphics</b> ដើម្បីបោះពុម្ពពណ៌</span></div>
+<div class="sheets">
+{% for p in range(pages) %}
+  <div class="page">
+  {% for c in range(10) %}
+    <div class="cell{% if kind != 'fragile' %} cust{% endif %}">
+    {% if kind == 'fragile' %}
+      <div class="frag {{ style }}">
+        <svg viewBox="0 0 64 64" fill="none" stroke="{{ '#fff' if style == 'black' else '#dc2626' }}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6h36c0 19-7 27-18 29v15"/><path d="M20 58h24M32 50v8"/><path d="M27 12l7 9-7 7 8 8" stroke-width="3"/></svg>
+        <div class="txt"><b>ប្រយ័ត្ន</b><b>បាក់បែក</b>{% if english %}<small>FRAGILE</small>{% endif %}</div>
+      </div>
+    {% else %}
+      <div class="card">
+        {% if brand %}
+        <div class="band">
+          <span class="brand"><img src="{{ url_for('static', filename='logo-mark.png') }}" alt=""><b>{{ shop }}</b></span>
+          <span class="to">ជូនដល់ · TO</span>
+        </div>
+        {% endif %}
+        <div class="info">
+          {% if name %}<div class="name">{{ name }}</div>{% endif %}
+          {% for ph in phones %}
+          <div class="pill"><svg viewBox="0 0 24 24" fill="#fff"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg><span>{{ ph }}</span></div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    </div>
+  {% endfor %}
+  </div>
+{% endfor %}
+</div>
+{% if request.args.get('auto') %}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),500))</script>{% endif %}
+</body></html>

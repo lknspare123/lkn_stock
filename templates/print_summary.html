@@ -1,0 +1,7 @@
+{% extends "print_base.html" %}{% block title %}{{ title }}{% endblock %}{% block body %}
+<h1>{{ title }}</h1><div class="sub">{{ s.start|dmy }} ដល់ {{ s.end|dmy }}</div>
+<div class="meta"><div><b>វិក្កយបត្រសរុប</b>{{ s.count_all }}</div><div><b>ទឹកប្រាក់សរុប</b>{{ s.total_all|currency }}</div>
+<div><b>បានទូទាត់</b><span class="paid">{{ s.total_paid|currency }}</span></div><div><b>នៅជំពាក់</b><span class="due">{{ s.total_unpaid|currency }}</span></div>
+{% if kind == 'sales' %}<div><b>បញ្ចុះតម្លៃសរុប</b>{{ s.total_discount|currency }}</div>{% endif %}<div><b>មិនទាន់ទូទាត់ / បង់ខ្លះ</b>{{ s.count_unpaid }} / {{ s.count_partial }}</div></div>
+{% if s.rows %}<table><thead><tr><th>កូដ</th><th>{{ who }}</th><th>កាលបរិច្ឆេទ</th><th class="r">សរុប</th><th class="r">បានបង់</th><th class="r">នៅខ្វះ</th></tr></thead><tbody>
+{% for r in s.rows %}<tr><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.date[:10]|dmy }}</td><td class="r">{{ r.total|currency }}</td><td class="r">{{ r.paid|currency }}</td><td class="r due">{{ r.balance|currency }}</td></tr>{% endfor %}</tbody></table>{% endif %}{% endblock %}

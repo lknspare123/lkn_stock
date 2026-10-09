@@ -1,0 +1,37 @@
+<!doctype html><html lang="km"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ស្ទីគ័រដឹកជញ្ជូន{% if name %} - {{ name }}{% endif %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&family=Noto+Sans+Khmer:wght@400;600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+@page{size:{{ w }}mm {{ h }}mm;margin:0}
+*{box-sizing:border-box}
+body{margin:0;background:#e5e7eb;color:#000;font-family:"Noto Sans Khmer","Siemreap","Inter",sans-serif}
+.toolbar{position:sticky;top:0;z-index:5;background:#1e293b;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center}
+.toolbar button{background:#2563eb;color:#fff;border:0;border-radius:6px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer}.toolbar span{opacity:.75;font-size:12px}
+.sheet{display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px}
+.lbl{--u:{{ u }};width:{{ w }}mm;height:{{ h }}mm;background:#fff;border:.5mm solid #000;display:flex;flex-direction:column;overflow:hidden;break-after:page;page-break-after:always}
+.warn{background:#000;color:#fff;text-align:center;padding:calc(var(--u)*4mm) calc(var(--u)*3mm);line-height:1.25}
+.warn b{display:block;font-size:calc(var(--u)*12.5mm);font-weight:900;letter-spacing:.2mm}
+.warn small{display:block;font-size:calc(var(--u)*4.2mm);letter-spacing:.8mm;margin-top:calc(var(--u)*1mm);font-family:"Inter",sans-serif;font-weight:700}
+.body{flex:1;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*5mm);padding:calc(var(--u)*4mm) calc(var(--u)*6mm);text-align:center}
+.cap{font-size:calc(var(--u)*3.8mm);color:#444;line-height:1.2;margin-bottom:calc(var(--u)*1mm)}
+.name{font-weight:800;line-height:1.3;font-size:calc(var(--u)*{{ name_mm }}mm);word-break:break-word}
+.phone{font-weight:900;line-height:1.25;font-family:"Inter","Noto Sans Khmer",sans-serif;letter-spacing:.3mm;font-size:calc(var(--u)*{{ phone_mm }}mm)}
+.foot{display:flex;justify-content:space-between;align-items:center;border-top:.4mm solid #000;padding:calc(var(--u)*2.2mm) calc(var(--u)*4mm);font-size:calc(var(--u)*3.8mm)}
+.pkg{font-weight:800;font-size:calc(var(--u)*5mm);border:.4mm solid #000;border-radius:1.5mm;padding:0 calc(var(--u)*2.5mm)}
+@media print{body{background:#fff}.toolbar{display:none}.sheet{display:block;padding:0}.lbl{border:.3mm solid #000}.lbl:last-child{break-after:auto;page-break-after:auto}}
+</style></head><body>
+<div class="toolbar"><button onclick="window.print()">🖨 Print / Save as PDF</button><span>{{ copies }} ស្ទីគ័រ · {{ w }}×{{ h }} mm · សូមជ្រើស Margins = None ពេលបោះពុម្ព</span></div>
+<div class="sheet">
+{% for i in range(1, copies + 1) %}
+  <div class="lbl">
+    <div class="warn"><b>ប្រយ័ត្នបាក់បែក</b>{% if english %}<small>FRAGILE · HANDLE WITH CARE</small>{% endif %}</div>
+    <div class="body">
+      {% if name %}<div><div class="cap">អតិថិជន</div><div class="name">{{ name }}</div></div>{% endif %}
+      {% if phones %}<div><div class="cap">ទូរស័ព្ទ</div>{% for p in phones %}<div class="phone">{{ p }}</div>{% endfor %}</div>{% endif %}
+    </div>
+    <div class="foot"><span>{{ code }}{% if code and date %} · {% endif %}{{ date }}</span>{% if numbered and copies > 1 %}<span class="pkg">{{ i }} / {{ copies }}</span>{% endif %}</div>
+  </div>
+{% endfor %}
+</div>
+{% if request.args.get('auto') %}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),500))</script>{% endif %}
+</body></html>

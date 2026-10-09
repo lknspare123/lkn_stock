@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.env
+serviceAccountKey.json
+*.db
+.venv/
+
+.env
+client_secret*.json
+gdrive_sign_in_link.txt
+googledrive_id.txt
+*.db

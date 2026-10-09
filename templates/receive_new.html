@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}New Receive{% endblock %}{% block mode %}receive{% endblock %}{% block content %}
+<h1>New stock receive</h1>
+<div class="card"><div class="fg">
+  <div><label>Distributor / supplier *</label><input id="distributor" data-field="distributor" list="sup"><datalist id="sup">{% for s in suppliers %}<option value="{{ s }}">{% endfor %}</datalist></div>
+  <div><label>Receive date</label><input type="date" data-field="date" value="{{ today }}"></div>
+  <div><label>Notes</label><input data-field="notes"></div></div></div>
+<div class="tw"><table id="lines"><thead><tr><th style="min-width:280px">Item</th><th class="num">In stock</th><th style="width:110px">Qty</th><th style="width:130px">Unit cost ($)</th><th class="num">Total</th><th></th></tr></thead><tbody></tbody></table></div>
+<datalist id="itemlist"></datalist>
+<div class="bar" style="margin-top:12px"><button type="button" class="btn sec" id="add-row">+ Add line</button></div>
+<div class="total-box">Total: <span id="grand">$0.00</span></div>
+<button class="btn" id="save">Save</button> <a class="btn sec" href="{{ url_for('receive_list') }}">Cancel</a>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+<script type="application/json" id="suppliers-data">{{ suppliers|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

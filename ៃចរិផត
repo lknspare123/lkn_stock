@@ -1,0 +1,22 @@
+(.venv) PS D:\LKN\lknstock-web> $env:DATABASE_URL = "postgresql://neondb_owner:npg_2JUlN6WGZmXB@ep-winter-sea-b4ikbken-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+(.venv) PS D:\LKN\lknstock-web> $env:CLOUDINARY_URL = "CLOUDINARY_URL=cloudinary://953747152622556:lLpHHb2_5eUPJO3pvpvaaza9fac@ik2rhwsi"                    
+(.venv) PS D:\LKN\lknstock-web>  python scripts/migrate_sqlite_to_neon.py "C:\Users\PC\AppData\Local\LKNStock\stock.db" --mirror                            
+[    0s] Reading stock.db…                   
+[    0s] 2165 items, 235 receives, 61 sales, 88 transfers
+[    3s] Mirror mode: looking for rows that exist only in the web database…
+[    7s] Nothing to delete - the web only contains rows that are also in stock.db.
+[    7s] Sending to Neon…
+[   10s]   branches: 4
+[   23s]   items: 2165
+[   27s]   distributor prices: 2171
+[   27s]   customer prices: 294
+[   28s]   receives: 235
+[   30s]   receive lines: 553
+[   30s]   sales: 61
+[   31s]   sale lines: 278
+[   31s]   transfers: 88
+[   32s]   transfer lines: 424
+[   33s  code counters: 3
+[   33s] Rebuilding stock totals…
+[   37s] Done. Rows now in Neon: {'branches': 4, 'items': 2165, 'purchase_invoices': 235, 'purchase_items': 553, 'invoice_records': 61, 'sales': 278, 'transfers': 88, 'transfer_items': 424}
+(.venv) PS D:\LKN\lknstock-web> python scripts/upload_local_images.py "C:\Users\PC\AppData\Local\LKNStock\assets\images\items"      

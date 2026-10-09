@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}{{ inv.invoice_code }}{% endblock %}{% block content %}
+<h1>Receive {{ inv.invoice_code }} <span class="sp"></span><a class="btn sec" href="{{ url_for('receive_list') }}">← Back</a></h1>
+<form method="post">
+<div class="card"><div class="fg">
+  <div><label>Distributor</label><input name="distributor_name" list="sup" value="{{ inv.distributor_name }}"><datalist id="sup">{% for s in suppliers %}<option value="{{ s }}">{% endfor %}</datalist></div>
+  <div><label>Date</label><input type="date" name="receive_date" value="{{ inv.receive_date }}"></div>
+  <div><label>Notes</label><input name="notes" value="{{ inv.notes }}"></div></div></div>
+<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th style="width:110px">Qty</th><th style="width:130px">Unit cost</th><th class="num">Total</th><th></th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ l.item_code }}<input type="hidden" name="line_id" value="{{ l.id }}"></td><td>{{ l.name_khmer }} {{ l.name_english }}</td>
+<td><input name="qty" type="number" step="any" value="{{ l.qty_receive }}"></td><td><input name="price" type="number" step="any" value="{{ l.unit_price }}"></td>
+<td class="num">{{ l.total_cost|currency }}</td>
+<td><button class="btn-x" formaction="{{ url_for('receive_line_delete', line_id=l.id, code=inv.invoice_code) }}" formnovalidate onclick="return confirm('Remove this line?')">✕</button></td></tr>
+{% endfor %}</tbody></table></div>
+<div class="total-box">Total: {{ inv.total_cost|currency }}</div>
+<button class="btn">Save changes</button>
+</form>
+<form method="post" action="{{ url_for('receive_delete', code=inv.invoice_code) }}" onsubmit="return confirm('Delete the whole invoice?')" style="margin-top:14px"><button class="btn bad">Delete invoice</button></form>
+{% endblock %}
