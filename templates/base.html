@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}LKN Stock{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&family=Noto+Sans+Khmer:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-mode="{% block mode %}{% endblock %}">
+{% if session.auth %}
+<aside class="sidebar">
+  <div class="brand">📦 LKN Stock</div>
+  {% for label, icon, ep, prefix in nav %}
+    <a class="nav {{ 'active' if current.startswith(prefix) }}" href="{{ url_for(ep) }}"><span>{{ icon }}</span>{{ label }}</a>
+  {% endfor %}
+  <a class="logout" href="{{ url_for('logout') }}">⎋ Log out</a>
+</aside>
+{% endif %}
+<main>
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body></html>

@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Items{% endblock %}{% block content %}
+<h1>Items <span class="sp"></span><a class="btn" href="{{ url_for('item_new') }}">+ New item</a></h1>
+<form class="bar" method="get"><input name="q" value="{{ q }}" placeholder="Search code, name, floor…" style="min-width:260px"><button class="btn sec">Search</button></form>
+<div class="tw"><table><thead><tr><th></th><th>Code</th><th>Khmer</th><th>English</th><th>Floor / Corner</th><th class="num">Cost (min–max)</th><th class="num">Sell</th><th class="num">Remain</th></tr></thead><tbody>
+{% for i in rows %}<tr>
+<td>{% if i.image_url %}<img class="thumb" loading="lazy" src="{{ i.image_url|thumb(80) }}">{% else %}<div class="thumb"></div>{% endif %}</td>
+<td><a href="{{ url_for('item_edit', item_id=i.id) }}">{{ i.item_code }}</a></td><td>{{ i.name_khmer }}</td><td>{{ i.name_english }}</td>
+<td>{{ i.floor }} {{ '/' if i.floor and i.corner }} {{ i.corner }}</td>
+<td class="num">{% if i.min_unit_price is not none %}{{ i.min_unit_price|currency }}{% if i.max_unit_price != i.min_unit_price %} – {{ i.max_unit_price|currency }}{% endif %}{% else %}{{ i.unit_price|currency }}{% endif %}</td>
+<td class="num">{{ i.sell_price|currency }}</td>
+<td class="num"><span class="pill {{ 'low' if i.remain_qty <= 5 else 'ok' }}">{{ i.remain_qty|qty }}</span></td></tr>
+{% else %}<tr><td colspan="8" class="muted">No items.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

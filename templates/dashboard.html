@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block content %}
+<h1>Dashboard</h1>
+<div class="grid g4">
+  <div class="card stat"><div class="l">Total items</div><div class="v">{{ s.total_items|qty }}</div></div>
+  <div class="card stat"><div class="l">Stock value (avg cost)</div><div class="v">{{ s.total_stock_value|currency }}</div></div>
+  <div class="card stat"><div class="l">Total sales</div><div class="v">{{ s.total_sell_value|currency }}</div></div>
+</div>
+<h2>Low stock (≤ 5)</h2>
+<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th class="num">Remaining</th></tr></thead><tbody>
+{% for i in s.low_stock %}<tr><td><a href="{{ url_for('item_edit', item_id=i.id) }}">{{ i.item_code }}</a></td><td>{{ i.name_khmer }} {{ i.name_english }}</td><td class="num"><span class="pill low">{{ i.remain_qty|qty }}</span></td></tr>
+{% else %}<tr><td colspan="3" class="muted">Nothing is running low 🎉</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

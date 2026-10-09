@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}New Transfer{% endblock %}{% block mode %}transfer{% endblock %}{% block content %}
+<h1>New branch transfer</h1>
+<div class="card"><div class="fg">
+  <div><label>Destination branch *</label><select data-field="branch"><option value="">— choose —</option>{% for b in branches %}<option>{{ b.name }}</option>{% endfor %}</select></div>
+  <div><label>Driver</label><input data-field="driver"></div>
+  <div><label>Note</label><input data-field="note"></div></div></div>
+<div class="tw"><table id="lines"><thead><tr><th style="min-width:260px">Item</th><th class="num">In stock</th><th style="width:100px">Qty</th><th style="width:120px">Unit cost ($)</th><th style="min-width:160px">Supplier</th><th style="min-width:140px">Remark</th><th class="num">Total</th><th></th></tr></thead><tbody></tbody></table></div>
+<datalist id="itemlist"></datalist>
+<div class="bar" style="margin-top:12px"><button type="button" class="btn sec" id="add-row">+ Add line</button></div>
+<div class="total-box">Total: <span id="grand">$0.00</span></div>
+<button class="btn" id="save">Save</button> <a class="btn sec" href="{{ url_for('transfers_list') }}">Cancel</a>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+<script type="application/json" id="suppliers-data">{{ suppliers|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='app.js') }}"></script>{% endblock %}

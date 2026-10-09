@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Reports{% endblock %}{% block content %}
+<h1>Reports</h1>
+<form class="bar" method="get"><div><label>From</label><input type="date" name="start" value="{{ start }}"></div><div><label>To</label><input type="date" name="end" value="{{ end }}"></div><button class="btn sec">Run</button></form>
+<div class="grid g4">
+  <div class="card stat"><div class="l">Sales revenue</div><div class="v">{{ revenue|currency }}</div></div>
+  <div class="card stat"><div class="l">Cost of goods sold</div><div class="v">{{ cost|currency }}</div></div>
+  <div class="card stat"><div class="l">Profit</div><div class="v" style="color:{{ 'var(--ok)' if profit>=0 else 'var(--bad)' }}">{{ profit|currency }} <small class="muted">({{ margin }}%)</small></div></div>
+  <div class="card stat"><div class="l">Purchases received</div><div class="v">{{ purchases|currency }}</div></div>
+  <div class="card stat"><div class="l">Branch transfers (cost)</div><div class="v">{{ transfers|currency }}</div></div>
+</div>
+<h2>Top items by revenue</h2>
+<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th class="num">Qty</th><th class="num">Revenue</th><th class="num">Profit</th></tr></thead><tbody>
+{% for t in top %}<tr><td>{{ t.code }}</td><td>{{ t.name }}</td><td class="num">{{ t.qty|qty }}</td><td class="num">{{ t.revenue|currency }}</td><td class="num">{{ (t.revenue - t.cost)|currency }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No sales in this range.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

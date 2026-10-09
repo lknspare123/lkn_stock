@@ -1,0 +1,55 @@
+:root{--bg:#0F1117;--side:#161B22;--card:#1C2128;--surface:#21262D;--hover:#2D333B;
+--accent:#58A6FF;--accent2:#79B8FF;--dim:#1F3A5F;--ok:#3FB950;--warn:#D29922;--bad:#F85149;
+--tx:#E6EDF3;--tx2:#8B949E;--mut:#484F58;--bd:#30363D;--r:6px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 "Siemreap","Noto Sans Khmer","Segoe UI",system-ui,sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent2)}
+.sidebar{position:fixed;inset:0 auto 0 0;width:220px;background:var(--side);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:12px 8px;overflow-y:auto}
+.brand{font-weight:700;font-size:17px;padding:8px 12px 16px}
+.sidebar a.nav{display:flex;gap:10px;padding:9px 12px;border-radius:var(--r);color:var(--tx2);margin-bottom:2px}
+.sidebar a.nav:hover{background:var(--hover);color:var(--tx)}
+.sidebar a.nav.active{background:var(--dim);color:var(--accent)}
+.sidebar .logout{margin-top:auto;padding:9px 12px;color:var(--tx2)}
+main{margin-left:220px;padding:22px 26px;max-width:1400px}
+h1{font-size:20px;margin:0 0 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1 .sp{flex:1}h2{font-size:15px;margin:22px 0 10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.stat .v{font-size:24px;font-weight:700;margin-top:2px}.stat .l{color:var(--tx2);font-size:12px}
+table{width:100%;border-collapse:collapse}
+th{background:var(--side);color:var(--tx2);font-weight:600;text-align:left;padding:8px 10px;font-size:12px;white-space:nowrap}
+td{padding:7px 10px;border-top:1px solid var(--bd);vertical-align:middle}
+tbody tr:nth-child(even){background:var(--surface)}tbody tr:hover{background:var(--dim)}
+.tw{overflow-x:auto;border:1px solid var(--bd);border-radius:var(--r);background:var(--card)}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.muted{color:var(--tx2)}
+input,select,textarea{background:var(--side);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r);padding:7px 9px;font:inherit;max-width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+td input,td select{width:100%;min-width:70px}
+label{display:block;color:var(--tx2);font-size:12px;margin:0 0 3px}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+.fg>div input,.fg>div select,.fg>div textarea{width:100%}
+.btn{display:inline-block;background:var(--accent);color:#fff;border:0;border-radius:var(--r);padding:7px 14px;cursor:pointer;font:inherit}
+.btn:hover{background:var(--accent2);color:#fff}.btn.sec{background:var(--surface);border:1px solid var(--bd);color:var(--tx)}
+.btn.sec:hover{background:var(--hover)}.btn.bad{background:var(--bad)}.btn.sm{padding:3px 9px;font-size:12px}
+.bar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
+.flash{padding:9px 14px;border-radius:var(--r);margin-bottom:12px;border:1px solid}
+.flash.ok{background:#12301a;border-color:var(--ok)}.flash.error{background:#3a1517;border-color:var(--bad)}
+.pill{padding:1px 8px;border-radius:99px;font-size:12px}.pill.low{background:#3a1517;color:var(--bad)}.pill.ok{background:#12301a;color:var(--ok)}
+.thumb{width:40px;height:40px;object-fit:cover;border-radius:4px;background:var(--surface)}
+.inline{display:inline}.inline button{vertical-align:middle}
+.total-box{text-align:right;font-size:18px;font-weight:700;margin:12px 0}
+.login{max-width:340px;margin:12vh auto}
+.btn-x{background:none;border:0;color:var(--bad);cursor:pointer;font-size:16px}
+.sheet{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.label{background:#fff;color:#000;border:1px dashed #999;padding:8px;text-align:center;break-inside:avoid;font-size:12px}
+.label .p{font-size:18px;font-weight:700}.label img{max-height:70px;max-width:100%}
+.print-only{display:none}
+@media(max-width:820px){
+ .sidebar{position:static;width:auto;flex-direction:row;overflow-x:auto;padding:6px;border-right:0;border-bottom:1px solid var(--bd)}
+ .brand,.sidebar .logout{display:none}.sidebar a.nav{white-space:nowrap}
+ main{margin:0;padding:14px}}
+@media print{
+ .sidebar,.no-print,.flash{display:none!important}main{margin:0;padding:0}
+ body{background:#fff;color:#000}.print-only{display:block}
+ .card{border:0;background:#fff;color:#000}th{background:#eee;color:#000}td{border-color:#ccc;color:#000}
+ tbody tr:nth-child(even){background:#fff}}

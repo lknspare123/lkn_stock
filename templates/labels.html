@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Print Labels{% endblock %}{% block content %}
+<div class="no-print">
+<h1>Print Labels <span class="sp"></span><button class="btn" id="go">🖨 Print selected</button></h1>
+<div class="bar"><input id="filter" placeholder="Filter…" style="min-width:240px"><div><label>Copies each</label><input id="copies" type="number" min="1" value="1" style="width:80px"></div></div>
+<div class="tw"><table id="tbl"><thead><tr><th><input type="checkbox" id="all" style="width:auto"></th><th>Code</th><th>Name</th><th class="num">Price</th></tr></thead><tbody>
+{% for i in items %}<tr data-id="{{ i.id }}"><td><input type="checkbox" class="pick" style="width:auto"></td><td>{{ i.code }}</td><td>{{ i.kh }} {{ i.en }}</td><td class="num">${{ '%.2f'|format(i.sell_price) }}</td></tr>{% endfor %}
+</tbody></table></div></div>
+<div class="sheet print-only" id="sheet"></div>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+<script>
+const ITEMS=Object.fromEntries(JSON.parse(document.getElementById('items-data').textContent).map(i=>[i.id,i]));
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.getElementById('all').onchange=e=>document.querySelectorAll('#tbl tbody tr:not([hidden]) .pick').forEach(c=>c.checked=e.target.checked);
+document.getElementById('filter').oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('#tbl tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q));};
+document.getElementById('go').onclick=()=>{
+  const n=Math.max(1,+document.getElementById('copies').value||1);let html='';
+  document.querySelectorAll('.pick:checked').forEach(c=>{const i=ITEMS[c.closest('tr').dataset.id];
+    for(let k=0;k<n;k++)html+=`<div class="label">${i.image?`<img src="${esc(i.image)}"><br>`:''}<b>${esc(i.kh||i.en)}</b><br>${esc(i.en)}<br>${esc(i.code)}<div class="p">$${i.sell_price.toFixed(2)}</div></div>`;});
+  if(!html)return alert('Select at least one item.');
+  document.getElementById('sheet').innerHTML=html;print();};
+</script>
+{% endblock %}

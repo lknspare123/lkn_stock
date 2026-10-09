@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Main Stock{% endblock %}{% block content %}
+<h1>Main Stock</h1>
+<form class="bar" method="get"><input name="q" value="{{ q }}" placeholder="Search…" style="min-width:260px"><button class="btn sec">Search</button></form>
+<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th class="num">Opening</th><th class="num">Received</th><th class="num">On hand</th><th class="num">Sold</th><th class="num">Transferred</th><th class="num">Remain</th></tr></thead><tbody>
+{% for i in rows %}<tr><td><a href="{{ url_for('item_edit', item_id=i.id) }}">{{ i.item_code }}</a></td><td>{{ i.name_khmer }} {{ i.name_english }}</td>
+<td class="num"><form class="inline" method="post" action="{{ url_for('stock_set_original', item_id=i.id) }}"><input type="hidden" name="q" value="{{ q }}">
+  <input name="original_qty" type="number" step="any" value="{{ i.original_qty|round(2) }}" style="width:90px;text-align:right" onchange="this.form.submit()"></form></td>
+<td class="num">{{ i.stock_add_qty|qty }}</td><td class="num">{{ i.on_hand_qty|qty }}</td><td class="num">{{ i.sell_qty|qty }}</td><td class="num">{{ i.transfer_qty|qty }}</td>
+<td class="num"><span class="pill {{ 'low' if i.remain_qty <= 5 else 'ok' }}">{{ i.remain_qty|qty }}</span></td></tr>
+{% else %}<tr><td colspan="8" class="muted">No items.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

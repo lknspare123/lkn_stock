@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}{{ t.transfer_code }}{% endblock %}{% block content %}
+<h1>Transfer {{ t.transfer_code }} <span class="sp"></span><button class="btn sec no-print" onclick="print()">🖨 Print</button><a class="btn sec no-print" href="{{ url_for('transfers_list') }}">← Back</a></h1>
+<div class="card"><div class="fg"><div><label>Created</label>{{ t.created_at }}</div><div><label>Branch</label>{{ t.branch_name }}</div><div><label>Driver</label>{{ t.driver_name }}</div><div><label>Note</label>{{ t.note }}</div></div></div>
+<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th>Floor/Corner</th><th class="num">Qty</th><th class="num">Unit cost</th><th>Supplier</th><th>Remark</th><th class="num">Total</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ l.item_code }}</td><td>{{ l.name_khmer }} {{ l.name_english }}</td><td>{{ l.floor }} {{ l.corner }}</td><td class="num">{{ l.qty|qty }}</td><td class="num">{{ l.unit_cost|currency }}</td><td>{{ l.supplier_name }}</td><td>{{ l.remark }}</td><td class="num">{{ l.total_cost|currency }}</td></tr>{% endfor %}
+</tbody></table></div>
+<div class="total-box">Total: {{ t.total_cost|currency }}</div>
+<form class="no-print" method="post" action="{{ url_for('transfer_delete', code=t.transfer_code) }}" onsubmit="return confirm('Delete this transfer and return stock?')"><button class="btn bad">Delete transfer</button></form>
+{% endblock %}

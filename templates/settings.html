@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}Settings{% endblock %}{% block content %}
+<h1>Settings</h1>
+<div class="card" style="max-width:520px"><h2 style="margin-top:0">Branches</h2>
+<table><tbody>{% for b in branches %}<tr><td>{{ b.name }}</td><td class="num"><form class="inline" method="post" action="{{ url_for('branch_delete', branch_id=b.id) }}" onsubmit="return confirm('Remove this branch?')"><button class="btn-x">✕</button></form></td></tr>{% endfor %}</tbody></table>
+<form class="bar" method="post" style="margin:12px 0 0"><input name="name" placeholder="New branch name" required><button class="btn sm">Add</button></form></div>
+{% endblock %}

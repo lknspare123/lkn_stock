@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}Branch Transfer{% endblock %}{% block content %}
+<h1>Branch Transfer <span class="sp"></span><a class="btn" href="{{ url_for('transfer_new') }}">+ New transfer</a></h1>
+<form class="bar" method="get"><div><label>From</label><input type="date" name="start" value="{{ start }}"></div><div><label>To</label><input type="date" name="end" value="{{ end }}"></div>
+<div><label>Branch</label><select name="branch"><option value="">All branches</option>{% for b in branches %}<option {{ 'selected' if b.name==branch }}>{{ b.name }}</option>{% endfor %}</select></div><button class="btn sec">Filter</button></form>
+<div class="tw"><table><thead><tr><th>Code</th><th>Created</th><th>Branch</th><th>Driver</th><th>Note</th><th class="num">Total cost</th></tr></thead><tbody>
+{% for r in rows %}<tr><td><a href="{{ url_for('transfer_detail', code=r.transfer_code) }}">{{ r.transfer_code }}</a></td><td>{{ r.created_at }}</td><td>{{ r.branch_name }}</td><td>{{ r.driver_name }}</td><td class="muted">{{ r.note }}</td><td class="num">{{ r.total_cost|currency }}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">No transfers.</td></tr>{% endfor %}</tbody></table></div>
+<div class="total-box">Total: {{ total|currency }}</div>
+{% endblock %}
