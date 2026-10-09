@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Items · Unlock{% endblock %}
+{% block content %}
+<form method="post" class="card login unlock">
+  <img class="login-logo" src="{{ url_for('static', filename='logo.png') }}" alt="LKN Spare Part">
+  <h1>🔒 ទិន្នន័យមុខទំនិញ</h1><p>សូមបញ្ចូលពាក្យសម្ងាត់ដើម្បីចូលប្រើ (ផុតកំណត់ក្រោយ ៣០ នាទី)</p>
+  <input type="hidden" name="next" value="{{ next }}">
+  <label>ពាក្យសម្ងាត់ (Password)</label>
+  <input type="password" name="password" autofocus required style="width:100%;margin-bottom:12px">
+  <button class="btn" style="width:100%">បើក / Unlock</button>
+</form>
+{% endblock %}

@@ -1,0 +1,5 @@
+# OPTIONAL - only if you run the background removal on your own machine (BG_REMOVER=rembg):
+#   pip install -r requirements.txt -r requirements-rembg.txt
+# Not needed for BG_REMOVER=cloudflare (that one runs at Cloudflare).
+rembg>=2.0.60
+onnxruntime>=1.18

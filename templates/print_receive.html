@@ -1,0 +1,8 @@
+{% extends "print_base.html" %}{% block title %}{{ inv.invoice_code }}{% endblock %}{% block body %}
+<h1>វិក្កយបត្រទទួលស្តុក</h1><div class="sub">PURCHASE / STOCK RECEIVE INVOICE</div>
+<div class="meta"><div><b>លេខវិក្កយបត្រ</b>{{ inv.invoice_code }}</div><div><b>កាលបរិច្ឆេទ</b>{{ inv.receive_date|dmy }}</div>
+<div><b>អ្នកផ្គត់ផ្គង់</b>{{ inv.distributor_name }}</div><div><b>ស្ថានភាព</b>{{ pay.label }}</div><div style="grid-column:1/-1"><b>កំណត់សម្គាល់</b>{{ inv.notes or '–' }}</div></div>
+<table><thead><tr><th>#</th><th>កូដ</th><th>ឈ្មោះទំនិញ</th><th class="r">បរិមាណ</th><th class="r">ថ្លៃដើម</th><th class="r">សរុប</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ loop.index }}</td><td>{{ l.item_code }}</td><td>{{ l.name_khmer or l.name_english }}</td><td class="r">{{ l.qty_receive|qty }}</td><td class="r">{{ l.unit_price|currency }}</td><td class="r">{{ l.total_cost|currency }}</td></tr>{% endfor %}</tbody></table>
+<div class="tot"><div class="g"><span>សរុបទឹកប្រាក់</span><span>{{ total|currency }}</span></div><div class="paid"><span>បានបង់</span><span>{{ pay.paid|currency }}</span></div><div class="due"><span>នៅខ្វះ</span><span>{{ pay.balance|currency }}</span></div></div>
+<div class="foot"><div>អ្នកទទួល</div><div>អ្នកផ្គត់ផ្គង់</div><div>អ្នកត្រួតពិនិត្យ</div></div>{% endblock %}

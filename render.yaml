@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: lkn-stock
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 180
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: SECRET_KEY
+        generateValue: true
+      - key: APP_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: R2_ACCOUNT_ID           # Cloudflare -> R2 -> Overview (right side) - item pictures are stored here
+        sync: false
+      - key: R2_ACCESS_KEY_ID        # R2 -> Manage API tokens -> Create (Object Read & Write)
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET               # bucket name, e.g. lknstock
+        sync: false
+      - key: R2_PUBLIC_URL           # public address of the bucket, e.g. https://img.yourdomain.com  (no trailing slash)
+        sync: false
+      # --- background removal (runs outside Render, so the free plan is enough) ---
+      - key: BG_REMOVER              # clearbackdrop = free API (see CLEARBACKDROP_GUIDE.md)  |  cloudflare = needs your own domain  |  empty = off
+        sync: false
+      - key: CLEARBACKDROP_API_KEY   # only for BG_REMOVER=clearbackdrop - free key from https://clearbackdrop.com/signup?next=/account
+        sync: false
+      - key: CRON_SECRET          # protects the /cron/backup URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REFRESH_TOKEN
+        sync: false
+      - key: BACKUP_KEEP
+        value: "30"

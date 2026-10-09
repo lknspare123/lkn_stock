@@ -1,0 +1,21 @@
+<!doctype html><html lang="km"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Print{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Siemreap&family=Noto+Sans+Khmer:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@page{size:{% block pagesize %}A4{% endblock %};margin:10mm}
+*{box-sizing:border-box}body{margin:0;background:#e5e7eb;color:#111;font:13px/1.5 "Inter","Siemreap","Noto Sans Khmer",sans-serif}
+.toolbar{position:sticky;top:0;background:#1e293b;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;z-index:5}
+.toolbar button{background:#2563eb;color:#fff;border:0;border-radius:6px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer}.toolbar span{opacity:.75;font-size:12px}
+.page{background:#fff;width:{% block pagew %}210mm{% endblock %};max-width:100%;margin:14px auto;padding:10mm;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+h1{font-size:20px;margin:0 0 2px;text-align:center}.sub{text-align:center;color:#555;margin-bottom:12px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;margin:10px 0;padding:8px 0;border-top:1px solid #ccc;border-bottom:1px solid #ccc}.meta b{display:inline-block;min-width:110px;color:#444;font-weight:600}
+table{width:100%;border-collapse:collapse;margin-top:8px}th{background:#1e3a8a;color:#fff;padding:6px 8px;text-align:left;font-size:12px}td{padding:6px 8px;border-bottom:1px solid #ddd}
+.r{text-align:right}.c{text-align:center}tfoot td{border:0;font-weight:700}
+.tot{margin-top:10px;margin-left:auto;width:55%}.tot div{display:flex;justify-content:space-between;padding:3px 0}.tot .g{font-size:16px;font-weight:700;border-top:2px solid #111;margin-top:4px;padding-top:6px}
+.paid{color:#15803d}.due{color:#b91c1c;font-weight:700}.foot{margin-top:28px;display:flex;justify-content:space-between;text-align:center}.foot div{width:30%;border-top:1px solid #777;padding-top:4px;font-size:12px;color:#444}
+@media print{body{background:#fff}.toolbar{display:none}.page{box-shadow:none;margin:0;padding:0;width:auto}}
+</style></head><body>
+<div class="toolbar"><button onclick="window.print()">🖨 Print / Save as PDF</button><span>ជ្រើសរើស «Save as PDF» នៅក្នុងផ្ទាំងបោះពុម្ព ដើម្បីរក្សាទុកជា PDF</span></div>
+<div class="page">{% block body %}{% endblock %}</div>
+{% if request.args.get('auto') %}<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),400))</script>{% endif %}
+</body></html>
