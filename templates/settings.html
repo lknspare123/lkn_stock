@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% block title %}ការកំណត់{% endblock %}{% block content %}
+<h1>⚙ ការកំណត់ប្រព័ន្ធ</h1>
+<div class="grid g2">
+  <div class="card"><h3>💾 បម្រុងទុកទិន្នន័យ (Backup)</h3>
+    <p class="small-note">ទាញយកទិន្នន័យទាំងអស់ (ទំនិញ វិក្កយបត្រ អតិថិជន សាខា…) ជាឯកសារ .db មួយ (អាចបើកជាមួយ DB Browser for SQLite) ឬ .json។ រូបភាពរក្សាទុកនៅ Cloudinary ដូច្នេះមិនចាំបាច់ចម្លងទេ។</p>
+    <form method="post" action="{{ url_for('settings_backup') }}"><div class="fld"><label>ពាក្យសម្ងាត់</label><input type="password" name="password" required></div><div class="btnrow"><button class="btn" name="format" value="db">⬇ ទាញយក .db</button><button class="btn sec" name="format" value="json">⬇ .json</button></div></form></div>
+  <div class="card"><h3>♻ ស្ដារទិន្នន័យ (Restore)</h3>
+    <p class="small-note">⚠ ទិន្នន័យបច្ចុប្បន្នទាំងអស់នឹងត្រូវជំនួសដោយឯកសារបម្រុង។ សូមទាញយក Backup ថ្មីមុនសិន។</p>
+    <form method="post" action="{{ url_for('settings_restore') }}" enctype="multipart/form-data" id="restore-form"><div class="fld"><label>ឯកសារបម្រុង (.db ឬ .json)</label><input type="file" name="backup" accept=".db,.json,application/json,application/x-sqlite3" required></div>
+      <div class="fld"><label>ពាក្យសម្ងាត់</label><input type="password" name="password" required></div><button class="btn sec">♻ ស្ដារទិន្នន័យ</button></form></div>
+</div>
+
+<div class="card" style="margin-top:16px"><h3>☁ បម្រុងទុកទៅ Google Drive ស្វ័យប្រវត្តិ</h3>
+  <div class="row2" style="margin-bottom:10px">
+    <div>Google Drive: {% if drive_ok %}<span class="pay paid">✅ បានភ្ជាប់</span>{% else %}<span class="pay unpaid">❌ មិនទាន់កំណត់</span>{% endif %}</div>
+    <div>Cron job: {% if cron_ready %}<span class="pay paid">✅ CRON_SECRET បានកំណត់</span>{% else %}<span class="pay unpaid">❌ មិនទាន់មាន CRON_SECRET</span>{% endif %}</div></div>
+  <p class="small-note">ឯកសារ <b>.db</b> ត្រូវបានរក្សាទុកក្នុងថត «{{ folder }}» នៅ Google Drive របស់អ្នក ហើយរក្សាទុក {{ keep }} ច្បាប់ចុងក្រោយ។ ឈ្មោះឯកសារមានម៉ោងកម្ពុជា។
+    កំណត់ cron-job ឲ្យហៅ <code>/cron/backup</code> រៀងរាល់ម៉ោង ៦:០០ ល្ងាច (Asia/Phnom_Penh) ជាមួយ header <code>Authorization: Bearer &lt;CRON_SECRET&gt;</code>។</p>
+  <button class="btn" id="drive-now" {% if not drive_ok %}disabled title="សូមកំណត់ GOOGLE_* ជាមុនសិន"{% endif %}>☁ បម្រុងទុកទៅ Google Drive ឥឡូវនេះ</button>
+  <div class="tw short" style="margin-top:14px"><table><thead><tr><th>ពេលវេលា</th><th>ប្រភព</th><th>លទ្ធផល</th><th>ឯកសារ</th><th class="num">ទំហំ</th><th>សេចក្តីលម្អិត</th></tr></thead><tbody>
+  {% for r in runs %}<tr><td>{{ r.ran_at }}</td><td>{{ 'Cron' if r.trigger == 'cron' else 'ដោយដៃ' }}</td><td>{% if r.ok %}<span class="pay paid">✅ ជោគជ័យ</span>{% else %}<span class="pay unpaid">❌ បរាជ័យ</span>{% endif %}</td><td>{{ r.file_name or '–' }}</td><td class="num">{{ '%.1f'|format(r.size_bytes / 1024) }} KB</td><td>{{ r.message }}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">មិនទាន់មានការបម្រុងទុកទេ</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="grid g2" style="margin-top:16px">
+  <div class="card"><h3>🏢 គ្រប់គ្រងសាខា</h3>
+    <form method="post" style="display:flex;gap:8px;margin-bottom:12px"><input name="name" placeholder="ឈ្មោះសាខាថ្មី" required style="flex:1"><button class="btn">＋ បន្ថែម</button></form>
+    <div class="tw short"><table><tbody>{% for b in branches %}<tr><td>{{ b.name }}</td><td class="num"><form method="post" action="{{ url_for('branch_delete', branch_id=b.id) }}" class="inline" onsubmit="return confirm('លុបសាខា {{ b.name }}?')"><button class="btn-x" title="លុប">🗑</button></form></td></tr>{% else %}<tr><td class="muted">មិនមានសាខា</td></tr>{% endfor %}</tbody></table></div></div>
+  <div class="card" style="border-color:var(--bad)"><h3 style="color:var(--bad)">🔥 លុបទិន្នន័យទាំងអស់ (Reset)</h3>
+    <p class="small-note">លុបទំនិញ វិក្កយបត្រ អតិថិជន ប័ណ្ណផ្ទេរ… ទាំងអស់ជាអចិន្ត្រៃយ៍។ សាខាត្រូវបានរក្សាទុក។ <b>មិនអាចត្រឡប់វិញបានទេ!</b></p>
+    <button class="btn bad" id="reset">🔥 លុបទិន្នន័យទាំងអស់…</button></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>ℹ អំពីកម្មវិធី</h3><div class="mrow"><span>កម្មវិធី</span><b>LKN Stock (Web)</b></div><div class="mrow"><span>កំណែ</span><b>{{ app_version }}</b></div><div class="mrow"><span>អ្នកបង្កើត</span><b>{{ author }}</b></div><div class="mrow"><span>©</span><b>{{ year }}</b></div></div>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script>
+document.getElementById('restore-form').addEventListener('submit', async e => { if (e.target.dataset.ok) return; e.preventDefault();
+  if (await UI.confirm('ទិន្នន័យបច្ចុប្បន្នទាំងអស់នឹងត្រូវជំនួសដោយឯកសារបម្រុង។ បន្តស្ដារឬទេ?', {danger: true, yes: 'ស្ដារ'})) { e.target.dataset.ok = 1; e.target.submit(); } });
+const dn = document.getElementById('drive-now');
+if (dn) dn.addEventListener('click', async () => { dn.disabled = true; dn.textContent = '⏳ កំពុងបម្រុងទុក…';
+  try { const r = await UI.api('/settings/backup-drive', {}); UI.toast(r.skipped ? r.message : `បានបម្រុងទុកទៅ Google Drive រួចរាល់ (${r.file})`); setTimeout(() => location.reload(), 900); }
+  catch (e) { await UI.alert(e.message, 'បម្រុងទុកទៅ Google Drive បរាជ័យ'); location.reload(); } });
+document.getElementById('reset').addEventListener('click', () => {
+  UI.modal({title: '🔥 លុបទិន្នន័យទាំងអស់', width: 440, sticky: true, body: '<p class="dlg-msg">សកម្មភាពនេះលុបទិន្នន័យទាំងអស់ជាអចិន្ត្រៃយ៍។ សូមបញ្ជាក់ដោយបញ្ចូលពាក្យសម្ងាត់ និងវាយពាក្យ <b>DELETE</b>។</p><div class="fld"><label>ពាក្យសម្ងាត់</label><input id="rp" type="password"></div><div class="fld"><label>វាយ DELETE</label><input id="rw" autocomplete="off"></div>',
+    buttons: [{label: 'បោះបង់', cls: 'sec'}, {label: '🔥 លុបទាំងអស់', cls: 'bad', onClick: async d => { const r = await UI.api('/settings/reset', {password: UI.$('#rp', d.el).value, word: UI.$('#rw', d.el).value}); UI.toast('បានលុបទិន្នន័យទាំងអស់រួចរាល់។'); setTimeout(() => location.reload(), 700); }}]}); });
+</script>{% endblock %}

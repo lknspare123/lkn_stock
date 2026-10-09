@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% block title %}ផ្ទេរទំនិញសាខា{% endblock %}{% block content %}
+<h1>🚚 ផ្ទេរទំនិញទៅសាខា</h1>
+<div id="root">
+<div class="ptabs"><button class="ptab on" data-pane="p-new">🚚 ផ្ទេរទំនិញថ្មី</button><button class="ptab" data-pane="p-hist">🕘 ប្រវត្តិប័ណ្ណផ្ទេរ</button></div>
+
+<div class="pane" id="p-new">
+  <div id="edit-banner" class="banner edit" hidden></div>
+  <div class="split">
+    <div>
+      <div class="card"><div class="suggest-wrap"><label>ស្វែងរកទំនិញ (កូដ / ឈ្មោះ) — Enter ដើម្បីបន្ថែម</label><input id="it-search" style="width:100%" autocomplete="off" placeholder="🔍 វាយកូដ ឬឈ្មោះទំនិញ…" autofocus></div>
+        <div class="tw short" style="margin-top:10px;max-height:230px"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">សល់</th><th class="num">ថ្លៃដើម</th></tr></thead><tbody id="results" class="selectable"></tbody></table></div></div>
+      <div class="card"><h3>ទំនិញត្រូវផ្ទេរ <span class="small-note" id="cart-count"></span> <button class="btn sec sm" id="refresh-prices" style="float:right">↻ ធ្វើបច្ចុប្បន្នភាពថ្លៃដើម</button></h3>
+        <div class="tw selectable mid"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">បរិមាណ</th><th class="num">ថ្លៃដើម</th><th class="num">តម្លៃលក់</th><th>អ្នកផ្គត់ផ្គង់</th><th>សម្គាល់</th><th class="num">សរុប</th><th></th></tr></thead><tbody id="cart"></tbody></table></div>
+        <p class="small-note">ចុចទ្វេដងលើជួរ ដើម្បីកែប្រែលម្អិត</p></div>
+    </div>
+    <div class="card">
+      <div class="fld"><label>សាខាគោលដៅ *</label><div style="display:flex;gap:6px"><select id="t-branch" style="flex:1"><option value="">— ជ្រើសរើសសាខា —</option>{% for b in branches %}<option>{{ b.name }}</option>{% endfor %}</select><button class="btn sec sm" id="b-manage" title="គ្រប់គ្រងសាខា">⚙</button></div></div>
+      <div class="row2"><div class="fld"><label>កាលបរិច្ឆេទផ្ទេរ</label><input id="t-date" type="date" value="{{ today }}"></div><div class="fld"><label>អ្នកដឹកជញ្ជូន</label><input id="t-driver"></div></div>
+      <div class="fld"><label>កំណត់សម្គាល់</label><input id="t-note"></div>
+      <div class="kpi" style="flex-direction:column;align-items:stretch;gap:4px"><div class="grandrow" style="margin:0"><span>ថ្លៃដើមសរុប</span><span class="v" id="g-total">$0.00</span></div></div>
+      <div class="fld" style="margin-top:12px"><label>ទឹកប្រាក់បានបង់ ($)</label>
+        <div style="display:flex;gap:8px"><input id="t-paid" type="number" min="0" step="any" value="0" style="flex:1"><button type="button" class="btn sec sm" id="pay-full">បង់ពេញ</button><button type="button" class="btn sec sm" id="pay-zero">០</button></div>
+        <div class="paystat unpaid" id="pay-status"></div></div>
+      <div class="btnrow"><button class="btn" id="save">💾 រក្សាទុក</button><button class="btn" id="save-print" style="background:var(--ok)">🖨 រក្សាទុក &amp; បោះពុម្ព</button></div>
+      <div class="btnrow" style="margin-top:8px"><button class="btn sec" id="clear">🧹 សម្អាតកន្ត្រក</button><button class="btn sec" id="cancel-edit" hidden>✖ បោះបង់ការកែប្រែ</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pane" id="p-hist" hidden>
+  <div class="filtbar">
+    <div><label>ស្វែងរកលេខប័ណ្ណ</label><input id="h-q" placeholder="🔍 TRF…"></div>
+    <div><label>ចាប់ពី</label><input id="h-start" type="date" value="{{ month_start }}"></div><div><label>ដល់</label><input id="h-end" type="date" value="{{ today }}"></div>
+    <div><label>ស្ថានភាព</label><select id="h-paid"><option value="all">ទាំងអស់</option><option value="paid">បានទូទាត់</option><option value="partial">បង់ខ្លះ</option><option value="unpaid">មិនទាន់ទូទាត់</option></select></div>
+    <button class="btn" id="h-load">ទាញយកទិន្នន័យ</button><button class="btn sec" id="h-summary">📊 សង្ខេប</button></div>
+  <div class="btnrow no-print" style="margin-bottom:12px;justify-content:flex-start">
+    <button class="btn sec sm" id="a-print" style="flex:none">🖨 មើលប័ណ្ណ</button><button class="btn sec sm" id="a-edit" style="flex:none">✏ កែប្រែ</button><button class="btn sec sm" id="a-pay" style="flex:none">💵 ការទូទាត់</button>
+    <button class="btn sec sm" id="a-paid" style="flex:none">✅ ដាក់ថាបានទូទាត់</button><button class="btn bad sm" id="a-del" style="flex:none">🗑 លុប</button><span class="small-note" id="h-count" style="align-self:center"></span></div>
+  <div class="split wide-r">
+    <div class="tw selectable" style="max-height:calc(100vh - 340px)"><table><thead><tr><th>លេខប័ណ្ណ</th><th>សាខា</th><th>អ្នកដឹក</th><th class="num">សរុប</th><th class="num">បានបង់</th><th class="num">នៅខ្វះ</th><th>ស្ថានភាព</th><th>កាលបរិច្ឆេទ</th></tr></thead><tbody id="h-body"></tbody></table></div>
+    <div class="card flat" style="margin:0"><h3 id="d-title">មុខទំនិញក្នុងប័ណ្ណ</h3><div class="tw short"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">បរិមាណ</th><th class="num">ថ្លៃដើម</th><th class="num">តម្លៃលក់</th><th>អ្នកផ្គត់ផ្គង់</th><th>សម្គាល់</th></tr></thead><tbody id="d-body"><tr><td colspan="7" class="muted">ជ្រើសរើសប័ណ្ណ</td></tr></tbody></table></div></div>
+  </div>
+</div>
+</div>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+<script type="application/json" id="view-data">{{ view|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script src="{{ url_for('static', filename='transfers.js') }}"></script>{% endblock %}

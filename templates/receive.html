@@ -1,0 +1,56 @@
+{% extends "base.html" %}{% block title %}ទទួលស្តុក{% endblock %}{% block content %}
+<h1>📥 ទទួលស្តុកពីអ្នកផ្គត់ផ្គង់</h1>
+<div id="root">
+<div class="ptabs"><button class="ptab on" data-pane="p-new" id="tab-new">📥 ទទួលស្តុកថ្មី</button><button class="ptab" data-pane="p-hist">🕘 ប្រវត្តិវិក្កយបត្រទទួលស្តុក</button></div>
+
+<div class="pane" id="p-new">
+  <div id="edit-banner" class="banner edit" hidden></div>
+  <div class="split wide-r">
+    <div class="card">
+      <h3>ព័ត៌មានវិក្កយបត្រ</h3>
+      <div class="row2"><div class="fld"><label>លេខវិក្កយបត្រ (Invoice No) *</label><input id="inv-code" value="{{ next_code }}"></div>
+        <div class="fld"><label>កាលបរិច្ឆេទទទួល</label><input id="inv-date" type="date" value="{{ today }}"></div></div>
+      <div class="fld"><label>អ្នកផ្គត់ផ្គង់ / ក្រុមហ៊ុនចែកចាយ *</label><input id="inv-dist" autocomplete="off" placeholder="វាយឈ្មោះ ឬជ្រើសរើស…"></div>
+      <div class="fld"><label>កំណត់សម្គាល់</label><input id="inv-notes"></div>
+      <div class="fld"><label>ទឹកប្រាក់បានបង់ ($)</label>
+        <div style="display:flex;gap:8px"><input id="inv-paid" type="number" min="0" step="any" value="0" style="flex:1"><button type="button" class="btn sec sm" id="pay-full">បង់ពេញ</button><button type="button" class="btn sec sm" id="pay-zero">០</button></div>
+        <div class="paystat unpaid" id="pay-status"></div></div>
+      <hr style="border:0;border-top:1px solid var(--bd);margin:14px 0">
+      <h3>បន្ថែមទំនិញ</h3>
+      <div class="fld suggest-wrap"><label>ស្វែងរកទំនិញ (កូដ / ឈ្មោះ)</label><input id="it-search" autocomplete="off" placeholder="🔍 វាយកូដ ឬឈ្មោះទំនិញ…"></div>
+      <div id="it-picked" class="small-note" style="margin:-6px 0 10px"></div>
+      <div class="row2"><div class="fld"><label>បរិមាណ</label><input id="it-qty" type="number" min="0" step="any" value="1"></div>
+        <div class="fld"><label>ថ្លៃដើម/ឯកតា ($)</label><input id="it-price" type="number" min="0" step="any" value="0"></div></div>
+      <button class="btn" id="it-add" style="width:100%">＋ បន្ថែមចូលវិក្កយបត្រ</button>
+    </div>
+
+    <div class="card">
+      <h3>ទំនិញក្នុងវិក្កយបត្រ <span class="small-note" id="cart-count"></span></h3>
+      <div class="tw selectable mid"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">បរិមាណ</th><th class="num">ថ្លៃដើម</th><th class="num">សរុប</th><th></th></tr></thead><tbody id="cart"></tbody></table></div>
+      <p class="small-note">ចុចទ្វេដងលើជួរ ដើម្បីកែបរិមាណ/តម្លៃ</p>
+      <div class="grandrow"><span>សរុបទឹកប្រាក់</span><span class="v" id="g-total">$0.00</span></div>
+      <div class="grandrow" style="font-size:14px"><span>នៅខ្វះ</span><span id="g-bal" style="color:var(--bad)">$0.00</span></div>
+      <div class="btnrow" style="margin-top:12px"><button class="btn" id="save">💾 រក្សាទុកវិក្កយបត្រ</button><button class="btn sec" id="clear">🧹 សម្អាតទម្រង់</button><button class="btn sec" id="cancel-edit" hidden>✖ បោះបង់ការកែប្រែ</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pane" id="p-hist" hidden>
+  <div class="filtbar">
+    <div><label>ស្វែងរក (កូដ/អ្នកផ្គត់ផ្គង់/កំណត់សម្គាល់)</label><input id="h-q" style="min-width:260px" placeholder="🔍"></div>
+    <div><label>ចាប់ពី</label><input id="h-start" type="date"></div><div><label>ដល់</label><input id="h-end" type="date"></div>
+    <div><label>ស្ថានភាព</label><select id="h-paid"><option value="all">ទាំងអស់</option><option value="paid">បានទូទាត់</option><option value="partial">បង់ខ្លះ</option><option value="unpaid">មិនទាន់ទូទាត់</option></select></div>
+    <button class="btn sec" id="h-clear">✖ សម្អាតតម្រង</button><button class="btn sec" id="h-summary">📊 សង្ខេប</button>
+  </div>
+  <div class="btnrow no-print" style="margin-bottom:12px;justify-content:flex-start">
+    <button class="btn sec sm" id="a-view" style="flex:none">🔎 លម្អិត</button><button class="btn sec sm" id="a-edit" style="flex:none">✏ កែប្រែ</button><button class="btn sec sm" id="a-print" style="flex:none">🖨 មើលវិក្កយបត្រ</button>
+    <button class="btn sec sm" id="a-pay" style="flex:none">💵 ការទូទាត់</button><button class="btn sec sm" id="a-paid" style="flex:none">✅ ដាក់ថាបានទូទាត់</button><button class="btn bad sm" id="a-del" style="flex:none">🗑 លុប</button>
+    <span class="small-note" id="h-count" style="align-self:center"></span></div>
+  <div class="tw selectable" style="max-height:calc(100vh - 330px)"><table><thead><tr><th>លេខវិក្កយបត្រ</th><th>អ្នកផ្គត់ផ្គង់</th><th>កាលបរិច្ឆេទ</th><th class="c">មុខទំនិញ</th><th class="num">សរុប</th><th class="num">បានបង់</th><th class="num">នៅខ្វះ</th><th>ស្ថានភាព</th><th>សម្គាល់</th></tr></thead><tbody id="h-body"></tbody></table></div>
+  <p class="small-note">Ctrl/Shift + ចុច = ជ្រើសច្រើនជួរ · Ctrl+A = ជ្រើសទាំងអស់ · ចុចទ្វេដង = លម្អិត</p>
+</div>
+</div>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+<script type="application/json" id="suppliers-data">{{ suppliers|tojson }}</script>
+<script type="application/json" id="view-data">{{ view|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script src="{{ url_for('static', filename='receive.js') }}"></script>{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "print_base.html" %}{% block title %}{{ sale.sale_code }}{% endblock %}{% block pagesize %}A5{% endblock %}{% block pagew %}148mm{% endblock %}{% block body %}
+<h1>វិក្កយបត្រលក់</h1><div class="sub">SALES INVOICE</div>
+<div class="meta"><div><b>លេខវិក្កយបត្រ</b>{{ sale.sale_code }}</div><div><b>កាលបរិច្ឆេទ</b>{{ sale.sale_date[:10]|dmy }}</div>
+<div><b>អតិថិជន</b>{{ sale.customer_name }}</div><div><b>ស្ថានភាព</b>{{ pay.label }}</div>
+<div><b>អ្នកផ្ញើ</b>{{ sale.sender_tel or '–' }}</div><div><b>អ្នកទទួល</b>{{ sale.receiver_tel or '–' }}</div>
+{% if sale.notes %}<div style="grid-column:1/-1"><b>កំណត់សម្គាល់</b>{{ sale.notes }}</div>{% endif %}</div>
+<table><thead><tr><th>#</th><th>ឈ្មោះទំនិញ</th><th class="r">បរិមាណ</th><th class="r">តម្លៃ</th><th class="r">សរុប</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ loop.index }}</td><td>{{ l.item_code }} — {{ l.name_khmer or l.name_english }}</td><td class="r">{{ l.qty|qty }}</td><td class="r">{{ l.sell_price|currency }}</td><td class="r">{{ l.line_total|currency }}</td></tr>{% endfor %}</tbody></table>
+<div class="tot">
+{% if has_discount %}<div><span>សរុបមុនបញ្ចុះតម្លៃ</span><span>{{ subtotal|currency }}</span></div><div><span>បញ្ចុះតម្លៃ ({{ ('%g'|format(sale.discount_percent)) }}%)</span><span>-{{ sale.discount_amount|currency }}</span></div>{% endif %}
+<div class="g"><span>សរុបត្រូវបង់</span><span>{{ sale.grand_total|currency }}</span></div><div class="paid"><span>បានបង់</span><span>{{ pay.paid|currency }}</span></div><div class="due"><span>នៅខ្វះ</span><span>{{ pay.balance|currency }}</span></div></div>
+<div class="foot"><div>អ្នកលក់</div><div>អតិថិជន</div></div>{% endblock %}
