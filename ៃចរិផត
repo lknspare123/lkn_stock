@@ -1,0 +1,66 @@
+  11972            ជើងម៉ាស៊ីនមុខ N/S 5T                 remain        0   transactions: 0
+
+In WINDOWS only (2) - not copied yet:
+  13051            ខ្សែលេខ H/D 1T 92-93
+
+=== Invoices on only ONE side ===
+  sales: identical
+  receives: identical
+  transfers: web-only []  windows-only ['TRF-20261019102421']
+
+To make the web an exact copy of the Windows data:  python scripts/migrate_sqlite_to_neon.py "<stock.db>" --mirror
+
+(.venv) PS D:\LKN\lknstock-web>  python scripts/migrate_sqlite_to_neon.py "C:\Users\PC\AppData\Local\LKNStock\stock.db" --mirror 
+[    0s] Reading stock.db…
+[    0s] 2155 items, 225 receives, 56 sales, 87 transfers
+[    3s] Mirror mode: looking for rows that exist only in the web database…
+
+Items that will be DELETED from the web (not in stock.db):
+  - 10808 ជើងម៉ាស៊ីនក្រោយ 63' H/D 15T = 6D22 =6D24
+  - 11020 ដុំចែកខ្យល់ កំពូល 4 ជាប់ក្រដាស់ខ្យល់ H/D
+  - 11030 ដុំចែកខ្យល់រ៉ូម៉ក រន្ធធំ ពក21 [RL3518RB0
+  - 11047 ក្រដាស់ខ្យល់ DR-5
+  - 11614 អ៊ីដ្រូវ៉ាក់ឈ្នាន់ជើង​ FUSO FP517 [MC807
+  - 11972 ជើងម៉ាស៊ីនមុខ N/S 5T
+
+Rows that will be deleted from the web database:
+  items: 7
+  purchase_items: 1
+
+Type MIRROR to delete them and make the web an exact copy of stock.db: mirror
+Cancelled - nothing was changed.
+(.venv) PS D:\LKN\lknstock-web>  python scripts/migrate_sqlite_to_neon.py "C:\Users\PC\AppData\Local\LKNStock\stock.db" --mirror
+[    0s] Reading stock.db…
+[    0s] 2155 items, 225 receives, 56 sales, 87 transfers
+[    3s] Mirror mode: looking for rows that exist only in the web database…
+
+Items that will be DELETED from the web (not in stock.db):
+  - 10808 ជើងម៉ាស៊ីនក្រោយ 63' H/D 15T = 6D22 =6D24
+  - 11020 ដុំចែកខ្យល់ កំពូល 4 ជាប់ក្រដាស់ខ្យល់ H/D
+  - 11030 ដុំចែកខ្យល់រ៉ូម៉ក រន្ធធំ ពក21 [RL3518RB0
+  - 11047 ក្រដាស់ខ្យល់ DR-5
+  - 11054 កៅស៊ូ កាប៊ីន H/D 15T 92-->97 (46x71x83x3
+  - 11614 អ៊ីដ្រូវ៉ាក់ឈ្នាន់ជើង​ FUSO FP517 [MC807
+  - 11972 ជើងម៉ាស៊ីនមុខ N/S 5T
+
+Rows that will be deleted from the web database:
+  items: 7
+  purchase_items: 1
+
+Type MIRROR to delete them and make the web an exact copy of stock.db: MIRROR
+[   78s] Sending to Neon…
+[   80s]   branches: 4
+[   93s]   items: 2155
+[   97s]   distributor prices: 2130
+[   98s]   customer prices: 278
+[   99s]   receives: 225
+[  100s]   receive lines: 538
+[  100s]   sales: 56
+[  101s]   sale lines: 260
+[  101s]   transfers: 87
+[  103s]   transfer lines: 421
+[  103s]   code counters: 3
+[  103s] Deleting rows that are not in stock.db…
+[  105s] Rebuilding stock totals…
+[  110s] Done. Rows now in Neon: {'branches': 4, 'items': 2155, 'purchase_invoices': 225, 'purchase_items': 538, 'invoice_records': 56, 'sales': 260, 'transfers': 87, 'transfer_items': 421}
+(.venv) PS D:\LKN\lknstock-web> 

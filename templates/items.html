@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}ទិន្នន័យមុខទំនិញ{% endblock %}{% block content %}
+<h1>📦 ទិន្នន័យមុខទំនិញ <span class="sp"></span>
+  <button class="btn sec sm no-print" id="print">🖨 បោះពុម្ពបញ្ជី</button>
+  <button class="btn sec sm no-print" id="export">⬇ Export CSV</button>
+  <button class="btn no-print" id="new">＋ បន្ថែមមុខទំនិញថ្មី</button></h1>
+<div class="filtbar no-print">
+  <div><label>ស្វែងរក (កូដ / ឈ្មោះ / អ្នកផ្គត់ផ្គង់ / ជាន់ / ជួរ)</label><input id="q" placeholder="🔍 ស្វែងរក…" style="min-width:320px" autocomplete="off"></div>
+  <div><label style="display:flex;gap:6px;align-items:center;margin-top:20px;cursor:pointer"><input type="checkbox" id="low"> បង្ហាញតែទំនិញជិតអស់ស្តុក (≤ 5)</label></div>
+  <div class="muted" id="count" style="margin-bottom:8px"></div>
+</div>
+<div class="tw selectable" style="max-height:calc(100vh - 230px)"><table id="tbl"><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+<p class="small-note no-print">ចុចជួរដើម្បីជ្រើសរើស · ចុចទ្វេដង = កែប្រែ · ចុចខាងស្តាំ (right-click) សម្រាប់មុខងារបន្ថែម</p>
+<script type="application/json" id="items-data">{{ data|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script src="{{ url_for('static', filename='items.js') }}"></script>{% endblock %}

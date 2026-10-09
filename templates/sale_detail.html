@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}{{ sale.sale_code }}{% endblock %}{% block content %}
+<h1>Invoice {{ sale.sale_code }} <span class="sp"></span><button class="btn sec no-print" onclick="print()">🖨 Print</button><a class="btn sec no-print" href="{{ url_for('sales_list') }}">← Back</a></h1>
+<div class="card"><div class="fg">
+  <div><label>Date</label>{{ sale.sale_date|dmy }}</div><div><label>Customer</label>{{ sale.customer_name }}</div>
+  <div><label>Sender tel</label>{{ sale.sender_tel }}</div><div><label>Receiver tel</label>{{ sale.receiver_tel }}</div>
+  <div><label>Notes</label>{{ sale.notes }}</div></div></div>
+<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th></tr></thead><tbody>
+{% for l in lines %}<tr><td>{{ l.item_code }}</td><td>{{ l.name_khmer }} {{ l.name_english }}</td><td class="num">{{ l.qty|qty }}</td><td class="num">{{ l.sell_price|currency }}</td><td class="num">{{ l.line_total|currency }}</td></tr>{% endfor %}
+</tbody></table></div>
+<div class="total-box">Grand total: {{ sale.grand_total|currency }}</div>
+<form class="no-print" method="post" action="{{ url_for('sale_delete', code=sale.sale_code) }}" onsubmit="return confirm('Delete this sale and restore stock?')"><button class="btn bad">Delete sale</button></form>
+{% endblock %}

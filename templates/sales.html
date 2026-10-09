@@ -1,0 +1,56 @@
+{% extends "base.html" %}{% block title %}ការលក់{% endblock %}{% block content %}
+<h1>🛒 ការលក់ទំនិញ</h1>
+<div id="root">
+<div class="ptabs"><button class="ptab on" data-pane="p-new">🛒 ការលក់ថ្មី</button><button class="ptab" data-pane="p-hist">🕘 ប្រវត្តិវិក្កយបត្រលក់</button></div>
+
+<div class="pane" id="p-new">
+  <div id="edit-banner" class="banner edit" hidden></div>
+  <div class="split">
+    <div>
+      <div class="card"><div class="suggest-wrap"><label>ស្វែងរកទំនិញ (កូដ / ឈ្មោះ) — Enter ដើម្បីបន្ថែម</label><input id="it-search" style="width:100%" autocomplete="off" placeholder="🔍 វាយកូដ ឬឈ្មោះទំនិញ…" autofocus></div>
+        <div class="tw short" style="margin-top:10px;max-height:230px"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">សល់</th><th class="num">តម្លៃលក់</th></tr></thead><tbody id="results" class="selectable"></tbody></table></div></div>
+      <div class="card"><h3>កន្ត្រកលក់ <span class="small-note" id="cart-count"></span></h3>
+        <div class="tw selectable mid"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">បរិមាណ</th><th class="num">តម្លៃលក់</th><th class="num">សរុប</th><th></th></tr></thead><tbody id="cart"></tbody></table></div>
+        <p class="small-note">ចុចទ្វេដងលើជួរ ដើម្បីកែបរិមាណ/តម្លៃ</p></div>
+    </div>
+    <div class="card">
+      <div class="fld"><label>កាលបរិច្ឆេទលក់</label><input id="s-date" type="date" value="{{ today }}"></div>
+      <div class="fld"><label>អតិថិជន</label><div style="display:flex;gap:6px"><select id="s-cust" style="flex:1"><option value="{{ GENERAL_CUSTOMER }}">{{ GENERAL_CUSTOMER }}</option>{% for c in customers %}<option>{{ c }}</option>{% endfor %}</select>
+        <button class="btn sec sm" id="c-add" title="បន្ថែមអតិថិជន">＋</button><button class="btn sec sm" id="c-ren" title="កែឈ្មោះអតិថិជន">✏</button></div></div>
+      <div class="row2"><div class="fld"><label>លេខអ្នកផ្ញើ ១</label><input id="s-s1"></div><div class="fld"><label>លេខអ្នកផ្ញើ ២</label><input id="s-s2"></div></div>
+      <div class="row2"><div class="fld"><label>លេខអ្នកទទួល ១</label><input id="s-r1"></div><div class="fld"><label>លេខអ្នកទទួល ២</label><input id="s-r2"></div></div>
+      <div class="fld"><label>កំណត់សម្គាល់</label><input id="s-note"></div>
+      <div class="fld"><label>បញ្ចុះតម្លៃ (%)</label><input id="s-disc" type="number" min="0" max="100" step="any" value="0">
+        <div class="quick">{% for p in [0,5,10,20] %}<button type="button" class="btn sec" data-disc="{{ p }}">{{ p }}%</button>{% endfor %}</div></div>
+      <div class="kpi" style="flex-direction:column;align-items:stretch;gap:4px">
+        <div class="grandrow" style="font-size:13px;margin:0"><span>សរុបមុនបញ្ចុះ</span><span id="g-sub">$0.00</span></div>
+        <div class="grandrow" style="font-size:13px;margin:0"><span>បញ្ចុះតម្លៃ</span><span id="g-disc" style="color:var(--warn)">-$0.00</span></div>
+        <div class="grandrow" style="margin:4px 0 0"><span>សរុបត្រូវបង់</span><span class="v" id="g-total">$0.00</span></div></div>
+      <div class="fld" style="margin-top:12px"><label>ទឹកប្រាក់បានបង់ ($)</label>
+        <div style="display:flex;gap:8px"><input id="s-paid" type="number" min="0" step="any" value="0" style="flex:1"><button type="button" class="btn sec sm" id="pay-full">បង់ពេញ</button><button type="button" class="btn sec sm" id="pay-zero">០</button></div>
+        <div class="paystat unpaid" id="pay-status"></div></div>
+      <div class="btnrow"><button class="btn" id="save">💾 រក្សាទុក</button><button class="btn" id="save-print" style="background:var(--ok)">🖨 រក្សាទុក &amp; បោះពុម្ព A5</button></div>
+      <div class="btnrow" style="margin-top:8px"><button class="btn sec" id="clear">🧹 សម្អាតកន្ត្រក</button><button class="btn sec" id="cancel-edit" hidden>✖ បោះបង់ការកែប្រែ</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="pane" id="p-hist" hidden>
+  <div class="filtbar">
+    <div><label>ស្វែងរកលេខវិក្កយបត្រ</label><input id="h-q" placeholder="🔍 INV…"></div>
+    <div><label>ចាប់ពី</label><input id="h-start" type="date" value="{{ month_start }}"></div><div><label>ដល់</label><input id="h-end" type="date" value="{{ today }}"></div>
+    <div><label>ស្ថានភាព</label><select id="h-paid"><option value="all">ទាំងអស់</option><option value="paid">បានទូទាត់</option><option value="partial">បង់ខ្លះ</option><option value="unpaid">មិនទាន់ទូទាត់</option></select></div>
+    <button class="btn" id="h-load">ទាញយកទិន្នន័យ</button><button class="btn sec" id="h-summary">📊 សង្ខេប</button></div>
+  <div class="btnrow no-print" style="margin-bottom:12px;justify-content:flex-start">
+    <button class="btn sec sm" id="a-print" style="flex:none">🖨 មើលវិក្កយបត្រ</button><button class="btn sec sm" id="a-edit" style="flex:none">✏ កែប្រែ</button><button class="btn sec sm" id="a-pay" style="flex:none">💵 ការទូទាត់</button>
+    <button class="btn sec sm" id="a-paid" style="flex:none">✅ ដាក់ថាបានទូទាត់</button><button class="btn bad sm" id="a-del" style="flex:none">🗑 លុប</button><span class="small-note" id="h-count" style="align-self:center"></span></div>
+  <div class="split wide-r">
+    <div class="tw selectable" style="max-height:calc(100vh - 340px)"><table><thead><tr><th>លេខវិក្កយបត្រ</th><th>អតិថិជន</th><th class="c">បញ្ចុះ</th><th class="num">សរុប</th><th class="num">បានបង់</th><th class="num">នៅខ្វះ</th><th>ស្ថានភាព</th><th>កាលបរិច្ឆេទ</th></tr></thead><tbody id="h-body"></tbody></table></div>
+    <div class="card flat" style="margin:0"><h3 id="d-title">មុខទំនិញក្នុងវិក្កយបត្រ</h3><div class="tw short"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">បរិមាណ</th><th class="num">តម្លៃលក់</th><th class="num">សរុប</th></tr></thead><tbody id="d-body"><tr><td colspan="5" class="muted">ជ្រើសរើសវិក្កយបត្រ</td></tr></tbody></table></div></div>
+  </div>
+</div>
+</div>
+<script type="application/json" id="items-data">{{ items|tojson }}</script>
+<script type="application/json" id="customers-data">{{ customers|tojson }}</script>
+<script type="application/json" id="view-data">{{ view|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script src="{{ url_for('static', filename='sales.js') }}"></script>{% endblock %}

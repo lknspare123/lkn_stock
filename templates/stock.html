@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% block title %}Main Stock{% endblock %}{% block content %}
+<h1>សៀវភៅបញ្ជីសារពើភ័ណ្ឌស្តុកចម្បង <span class="sp"></span><button class="btn sec sm" id="export">⬇ Export CSV</button></h1>
+<div class="bar">
+  <div><label>ស្វែងរកមុខទំនិញ…</label><input id="q" placeholder="Code, name, supplier…" style="min-width:280px" autocomplete="off"></div>
+  <div><label>Stock level</label><select id="level"><option value="">All</option><option value="in">In stock</option><option value="low">Low (≤ 5)</option><option value="out">Out of stock</option></select></div>
+</div>
+<div class="sumrow">
+  <span id="s-items" class="muted">–</span>
+  <span>តម្លៃដើមសារពើភ័ណ្ឌសរុប: <b id="s-cost" style="color:var(--warn)">–</b></span>
+  <span>តម្លៃទីផ្សារប៉ាន់ស្មានសរុប: <b id="s-sell" style="color:var(--ok)">–</b></span>
+</div>
+
+<div class="ms-layout">
+  <div class="tw ms-table"><table id="tbl"><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table></div>
+
+  <aside class="card ms-side" id="side">
+    <div id="p-empty" class="muted" style="padding:30px 6px;text-align:center">សូមជ្រើសរើសទំនិញដើម្បីបង្ហាញព័ត៌មានលម្អិត<br><small>Click a row to see details</small></div>
+    <div id="p-body" hidden>
+      <div class="p-title" id="p-title"></div>
+      <div class="p-img" id="p-img" title="Click to enlarge"></div>
+      <div id="p-meta"></div>
+      <form id="p-open" method="post" class="p-open">
+        <label>បរិមាណដើមដំបូង (opening qty)</label>
+        <div style="display:flex;gap:8px"><input name="original_qty" type="number" step="any" required><button class="btn sm">Save</button></div>
+      </form>
+      <div class="p-mhead"><span>ម៉ាទ្រីសថ្លៃដើម &amp; តម្លៃលក់កំណត់ពិសេស</span><input id="p-search" placeholder="ស្វែងរកឈ្មោះ…"></div>
+      <div class="tabs"><button class="tab on" data-tab="d" type="button">ថ្លៃដើមអ្នកផ្គត់ផ្គង់</button><button class="tab" data-tab="c" type="button">តម្លៃលក់តាមអតិថិជន</button></div>
+      <div class="tw p-list"><table><thead id="p-th"></thead><tbody id="p-list"></tbody></table></div>
+      <div class="p-actions"><button class="btn" id="p-hist" type="button">🕘 មើលប្រវត្តិទិញលម្អិត</button><a class="btn sec" id="p-edit">Edit item</a></div>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="lb" hidden><img id="lb-img" alt=""></div>
+<div class="modal" id="hm" hidden><div class="mbox card"><div class="chead"><b id="hm-title">Purchase history</b><button class="btn sec sm" id="hm-x" type="button">Close</button></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Invoice</th><th>Distributor</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Total</th></tr></thead><tbody id="hm-body"></tbody></table></div></div></div>
+<script type="application/json" id="stock-data">{{ data|tojson }}</script>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='stock.js') }}"></script>{% endblock %}
