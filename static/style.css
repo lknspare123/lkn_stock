@@ -95,6 +95,23 @@ label{display:block;color:var(--tx2);font-size:12px;font-weight:500;margin:0 0 5
 .thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;background:var(--surface);border:1px solid var(--bd);display:block}
 .total-box{text-align:right;font-size:18px;font-weight:700;margin:16px 0;font-variant-numeric:tabular-nums}
 
+/* Dashboard */
+.sub{color:var(--tx2);font-size:12px;font-weight:400;margin-top:2px}
+a.card.stat{display:block}a.card.stat:hover{border-color:var(--bad)}
+.chead{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.chead.pad{padding:16px 20px;margin:0;border-bottom:1px solid var(--bd);align-items:center}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:var(--surface);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;display:flex;flex-direction:column;min-width:110px}
+.chip span{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em}.chip b{font-size:16px;font-variant-numeric:tabular-nums}.chip small{color:var(--tx2)}
+.chart{width:100%;height:auto;display:block}.chart .axis{stroke:var(--bd2);stroke-width:1}
+.chart .ax{fill:var(--tx2);font-size:10px}.chart .bar-r{fill:var(--accent);opacity:.85}.chart .bar-r:hover{opacity:1}
+.plist{padding:6px 20px 12px}.prow{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid var(--bd)}
+.prow:first-child{border-top:0}.prow .rk{width:24px;height:24px;border-radius:50%;background:var(--surface);color:var(--tx2);font-size:12px;font-weight:600;display:grid;place-items:center;flex:none}
+.prow .pm{flex:1;min-width:0}.prow .pr{text-align:right;flex:none;font-variant-numeric:tabular-nums}
+.meter{height:5px;background:var(--surface);border-radius:99px;margin-top:6px;overflow:hidden}.meter i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.empty{padding:22px 0;color:var(--tx2)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+
 /* Login */
 .login{max-width:380px;margin:14vh auto 0;padding:32px}
 .login h1{justify-content:center;margin-bottom:6px}.login p{text-align:center;color:var(--tx2);margin:0 0 22px}

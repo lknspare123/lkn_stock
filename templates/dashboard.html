@@ -1,13 +1,73 @@
-{% extends "base.html" %}{% block content %}
-<h1>Dashboard</h1>
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block content %}
+<h1>មជ្ឈមណ្ឌលគ្រប់គ្រងទិន្នន័យវិភាគអាជីវកម្ម <span class="sp"></span>
+  <span class="muted" style="font-size:12px;font-weight:400">Updated {{ d.updated }}</span>
+  <a class="btn sec sm" href="{{ url_for('dashboard', refresh=1) }}">↻ Refresh</a></h1>
+
 <div class="grid g4">
-  <div class="card stat"><div class="l">Total items</div><div class="v">{{ s.total_items|qty }}</div></div>
-  <div class="card stat"><div class="l">Stock value (avg cost)</div><div class="v">{{ s.total_stock_value|currency }}</div></div>
-  <div class="card stat"><div class="l">Total sales</div><div class="v">{{ s.total_sell_value|currency }}</div></div>
+  <div class="card stat"><div class="l">ប្រភេទមុខទំនិញសរុប</div><div class="v">{{ d.total_items|qty }}</div>
+    <div class="sub">{{ d.out_of_stock|qty }} out of stock</div></div>
+  <div class="card stat"><div class="l">តម្លៃដើមទំនិញក្នុងស្តុកសរុប</div><div class="v">{{ d.stock_value|currency }}</div>
+    <div class="sub">Valued at average cost</div></div>
+  <div class="card stat"><div class="l">ទឹកប្រាក់លក់ចេញសរុប</div><div class="v" style="color:var(--ok)">{{ d.revenue_total|currency }}</div>
+    <div class="sub">Invoices {{ d.sales_total|currency }} · Paid transfers {{ d.paid_transfers|currency }}</div></div>
+  <a class="card stat" href="#low" style="color:inherit"><div class="l">ការព្រមានទំនិញជិតអស់ពីស្តុក</div><div class="v" style="color:var(--bad)">{{ d.low|length }}</div>
+    <div class="sub">At or below {{ d.threshold|qty }} units</div></a>
 </div>
-<h2>Low stock (≤ 5)</h2>
-<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th class="num">Remaining</th></tr></thead><tbody>
-{% for i in s.low_stock %}<tr><td><a href="{{ url_for('item_edit', item_id=i.id) }}">{{ i.item_code }}</a></td><td>{{ i.name_khmer }} {{ i.name_english }}</td><td class="num"><span class="pill low">{{ i.remain_qty|qty }}</span></td></tr>
-{% else %}<tr><td colspan="3" class="muted">Nothing is running low 🎉</td></tr>{% endfor %}
-</tbody></table></div>
+
+<div class="card" style="margin-top:16px">
+  <div class="chead"><div><b>ការលក់ ៣០ថ្ងៃចុងក្រោយ</b><div class="sub">Daily sales revenue · last 30 days</div></div>
+    <div class="chips">
+      <div class="chip"><span>Today</span><b>{{ d.today_rev|currency }}</b></div>
+      <div class="chip"><span>This month</span><b>{{ d.month_rev|currency }}</b></div>
+      <div class="chip"><span>Month profit</span><b style="color:{{ 'var(--ok)' if d.month_profit >= 0 else 'var(--bad)' }}">{{ d.month_profit|currency }}</b><small>{{ '%.1f'|format(d.month_margin) }}%</small></div>
+    </div></div>
+  <svg viewBox="0 0 {{ chart.w }} {{ chart.h }}" class="chart" role="img" aria-label="Sales last 30 days">
+    <line x1="0" x2="{{ chart.w }}" y1="{{ chart.base }}" y2="{{ chart.base }}" class="axis"/>
+    <text x="0" y="10" class="ax">{{ chart.max }}</text>
+    {% for b in chart.bars %}<rect class="bar-r" x="{{ b.x }}" y="{{ b.y }}" width="{{ b.w }}" height="{{ b.h }}" rx="2"><title>{{ b.tip }}</title></rect>{% endfor %}
+    {% for t in chart.ticks %}<text x="{{ t.x }}" y="{{ chart.h - 6 }}" text-anchor="middle" class="ax">{{ t.label }}</text>{% endfor %}
+  </svg>
+</div>
+
+<div class="grid g2">
+  <div class="card" style="padding:0">
+    <div class="chead pad"><div><b style="color:var(--ok)">⭐ ផលិតផលលក់ដាច់បំផុតទាំង ១០</b><div class="sub">Top 10 best sellers by quantity</div></div></div>
+    <div class="plist">
+    {% for b in d.best %}<div class="prow"><div class="rk">{{ loop.index }}</div>
+      <div class="pm"><a href="{{ url_for('item_edit', item_id=b.id) }}"><b>{{ b.code }}</b></a> <span class="muted">{{ b.name }}</span>
+        <div class="meter"><i style="width:{{ (b.qty / best_max * 100)|round(1) }}%"></i></div></div>
+      <div class="pr"><b>{{ b.revenue|currency }}</b><div class="sub">លក់បាន {{ b.qty|qty }}</div></div></div>
+    {% else %}<div class="empty">មិនមានទិន្នន័យនៃការលក់ផលិតផលត្រូវបានកត់ត្រាទុកនោះទេ</div>{% endfor %}</div>
+  </div>
+
+  <div class="card" style="padding:0">
+    <div class="chead pad"><div><b style="color:var(--warn)">📉 ការព្រមានទំនិញគាំងស្តុកយូរ</b><div class="sub">Slow movers: lowest sales, highest remaining</div></div></div>
+    <div class="plist">
+    {% for i in d.dead %}<div class="prow"><div class="rk">{{ loop.index }}</div>
+      <div class="pm"><a href="{{ url_for('item_edit', item_id=i.id) }}"><b>{{ i.item_code }}</b></a> <span class="muted">{{ i.name_english or i.name_khmer }}</span></div>
+      <div class="pr"><b style="color:var(--warn)">សល់ {{ i.remain_qty|qty }}</b><div class="sub">លក់ចេញបាន {{ i.sell_qty|qty }}</div></div></div>
+    {% else %}<div class="empty">មិនមានទិន្នន័យទំនិញគាំងស្តុកត្រូវបានរកឃើញនោះទេ</div>{% endfor %}</div>
+  </div>
+</div>
+
+<div class="card" id="low" style="padding:0;margin-top:16px">
+  <div class="chead pad"><div><b style="color:var(--bad)">⚠ ប្រព័ន្ធផ្ដល់ដំណឹងអាសន្នទំនិញខ្វះខាតពីស្តុកធ្ងន់ធ្ងរ</b>
+    <div class="sub">{{ d.low|length }} item(s) at or below {{ d.threshold|qty }}{% if d.low|length > 15 %} · showing the 15 lowest{% endif %}</div></div>
+    <a class="btn sm" href="{{ url_for('receive_new') }}">+ Receive stock</a></div>
+  <div class="plist">
+  {% for i in d.low[:15] %}<div class="prow"><div class="pm" style="flex:0 0 140px"><a href="{{ url_for('item_edit', item_id=i.id) }}"><b>{{ i.item_code }}</b></a></div>
+    <div class="pm muted">{{ i.name_english or i.name_khmer }}</div>
+    <div class="pr"><span class="pill {{ 'low' if i.remain_qty <= 0 else 'warn' }}">{{ 'អស់ស្តុក' if i.remain_qty <= 0 else 'នៅសល់ ' ~ (i.remain_qty|qty) }}</span></div></div>
+  {% else %}<div class="empty" style="color:var(--ok)">បរិមាណសារពើភ័ណ្ឌទាំងអស់ស្ថិតក្នុងកម្រិតមានសុវត្ថិភាពខ្ពស់ ✓</div>{% endfor %}</div>
+</div>
+
+<div class="grid g2" style="margin-top:16px">
+  <div class="card" style="padding:0"><div class="chead pad"><b>Recent sales</b><a href="{{ url_for('sales_list') }}">View all →</a></div>
+    <table><tbody>{% for r in d.recent_sales %}<tr><td><a href="{{ url_for('sale_detail', code=r.sale_code) }}">{{ r.sale_code }}</a></td><td class="muted">{{ r.sale_date|dmy }}</td><td>{{ r.customer_name }}</td><td class="num">{{ r.grand_total|currency }}</td></tr>
+    {% else %}<tr><td class="muted">No sales yet.</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card" style="padding:0"><div class="chead pad"><b>Recent branch transfers</b><a href="{{ url_for('transfers_list') }}">View all →</a></div>
+    <table><tbody>{% for r in d.recent_transfers %}<tr><td><a href="{{ url_for('transfer_detail', code=r.transfer_code) }}">{{ r.transfer_code }}</a></td><td>{{ r.branch_name }}</td>
+      <td><span class="pill {{ 'ok' if r.is_paid else 'warn' }}">{{ 'Paid' if r.is_paid else 'Unpaid' }}</span></td><td class="num">{{ r.total_cost|currency }}</td></tr>
+    {% else %}<tr><td class="muted">No transfers yet.</td></tr>{% endfor %}</tbody></table></div>
+</div>
 {% endblock %}

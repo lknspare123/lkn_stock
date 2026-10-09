@@ -91,7 +91,7 @@ trf = {r["id"]: r for r in rows("SELECT * FROM transfers")}
 for t in trf.values():
     ops.append(("set", col("transfers").document(t["transfer_code"]), {
         "branch_name": t["branch_name"], "driver_name": t["driver_name"], "note": t["note"],
-        "total_cost": t["total_cost"], "created_at": t["created_at"]}))
+        "total_cost": t["total_cost"], "is_paid": bool(t.get("is_paid", 0)), "created_at": t["created_at"]}))
 for l in rows("SELECT * FROM transfer_items"):
     ops.append(("set", col("transfer_items").document(f"m{l['id']}"), {
         "transfer_code": trf[l["transfer_id"]]["transfer_code"], "item_id": str(l["item_id"]), "qty": l["qty"],

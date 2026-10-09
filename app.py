@@ -107,9 +107,28 @@ def date_range():
 
 
 # ── Dashboard ────────────────────────────────────────────────────────────────
+def build_chart(daily):
+    """Server-side SVG bar chart geometry (no JS / no external libraries)."""
+    W, H, PB, PT = 720, 180, 22, 10
+    n = len(daily)
+    mx = max([v for _, v in daily] + [0]) or 1
+    bw = W / n
+    bars, ticks = [], []
+    for i, (d, v) in enumerate(daily):
+        h = (H - PB - PT) * v / mx
+        bars.append({"x": round(i * bw + bw * 0.18, 1), "w": round(bw * 0.64, 1),
+                     "y": round(H - PB - max(h, 1.5 if v else 0), 1), "h": round(max(h, 1.5 if v else 0), 1),
+                     "tip": f"{fmt_date(d)} — {fmt_currency(v)}"})
+        if i % 5 == 0 or i == n - 1:
+            ticks.append({"x": round(i * bw + bw / 2, 1), "label": d[5:].replace("-", "/")})
+    return {"w": W, "h": H, "base": H - PB, "bars": bars, "ticks": ticks, "max": fmt_currency(mx)}
+
+
 @app.get("/")
 def dashboard():
-    return render_template("dashboard.html", s=db.dashboard_stats())
+    d = db.dashboard_data(force=bool(request.args.get("refresh")))
+    best_max = max([b["qty"] for b in d["best"]] + [1])
+    return render_template("dashboard.html", d=d, chart=build_chart(d["daily"]), best_max=best_max)
 
 
 # ── Items ────────────────────────────────────────────────────────────────────
@@ -384,6 +403,13 @@ def transfer_new():
 def transfer_detail(code):
     t = db.get_transfer(code) or abort(404)
     return render_template("transfer_detail.html", t=t, lines=db.get_transfer_items(code))
+
+
+@app.post("/transfers/<code>/paid")
+def transfer_paid(code):
+    db.set_transfer_paid(code, request.form.get("paid") == "1")
+    flash("Payment status updated.", "ok")
+    return redirect(request.referrer or url_for("transfer_detail", code=code))
 
 
 @app.post("/transfers/<code>/delete")

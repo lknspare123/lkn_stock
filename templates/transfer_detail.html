@@ -1,6 +1,9 @@
 {% extends "base.html" %}{% block title %}{{ t.transfer_code }}{% endblock %}{% block content %}
 <h1>Transfer {{ t.transfer_code }} <span class="sp"></span><button class="btn sec no-print" onclick="print()">🖨 Print</button><a class="btn sec no-print" href="{{ url_for('transfers_list') }}">← Back</a></h1>
-<div class="card"><div class="fg"><div><label>Created</label>{{ t.created_at }}</div><div><label>Branch</label>{{ t.branch_name }}</div><div><label>Driver</label>{{ t.driver_name }}</div><div><label>Note</label>{{ t.note }}</div></div></div>
+<div class="card"><div class="fg"><div><label>Created</label>{{ t.created_at }}</div><div><label>Branch</label>{{ t.branch_name }}</div><div><label>Driver</label>{{ t.driver_name }}</div><div><label>Note</label>{{ t.note }}</div>
+  <div><label>Payment</label><span class="pill {{ 'ok' if t.is_paid else 'warn' }}">{{ 'Paid' if t.is_paid else 'Unpaid' }}</span>
+    <form class="inline no-print" method="post" action="{{ url_for('transfer_paid', code=t.transfer_code) }}"><input type="hidden" name="paid" value="{{ 0 if t.is_paid else 1 }}">
+    <button class="btn sec sm">{{ 'Mark unpaid' if t.is_paid else 'Mark as paid' }}</button></form></div></div></div>
 <div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th>Floor/Corner</th><th class="num">Qty</th><th class="num">Unit cost</th><th>Supplier</th><th>Remark</th><th class="num">Total</th></tr></thead><tbody>
 {% for l in lines %}<tr><td>{{ l.item_code }}</td><td>{{ l.name_khmer }} {{ l.name_english }}</td><td>{{ l.floor }} {{ l.corner }}</td><td class="num">{{ l.qty|qty }}</td><td class="num">{{ l.unit_cost|currency }}</td><td>{{ l.supplier_name }}</td><td>{{ l.remark }}</td><td class="num">{{ l.total_cost|currency }}</td></tr>{% endfor %}
 </tbody></table></div>

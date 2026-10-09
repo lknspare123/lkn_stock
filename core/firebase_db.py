@@ -23,19 +23,40 @@ computed in Python by _enrich().
 """
 import os
 import json
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 
+def _load_credentials_info(raw):
+    """Parse the service-account JSON, tolerating common copy/paste damage."""
+    raw = raw.strip()
+    info = json.loads(raw, strict=False)          # strict=False allows real newlines in strings
+    if isinstance(info, str):                      # value was wrapped in quotes and escaped
+        info = json.loads(info, strict=False)
+    pk = info.get("private_key", "")
+    pk = pk.replace("\\n", "\n")                  # literal backslash-n -> newline
+    if "\n" not in pk.strip():                     # newlines were turned into spaces: rebuild PEM
+        body = pk.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
+        body = "".join(body.split())
+        pk = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(body[i:i + 64] for i in range(0, len(body), 64)) \
+             + "\n-----END PRIVATE KEY-----\n"
+    info["private_key"] = pk
+    return info
+
+
 def _init_app():
     if firebase_admin._apps:
         return
-    raw = os.environ.get("FIREBASE_CREDENTIALS_JSON")
-    if raw:
-        cred = credentials.Certificate(json.loads(raw))
+    raw = os.environ.get("FIREBASE_CREDENTIALS_JSON", "")
+    if raw.strip():
+        info = _load_credentials_info(raw)
+        print(f"[firebase] project={info.get('project_id')} account={info.get('client_email')} "
+              f"key_id={str(info.get('private_key_id', ''))[:8]}", flush=True)
+        cred = credentials.Certificate(info)
     else:
         cred = credentials.Certificate(os.environ.get("FIREBASE_CREDENTIALS_FILE", "serviceAccountKey.json"))
     firebase_admin.initialize_app(cred)
@@ -43,6 +64,14 @@ def _init_app():
 
 _init_app()
 fs = firestore.client()
+
+LOW_STOCK = float(os.environ.get("LOW_STOCK_THRESHOLD", 5))
+_CACHE = {"t": 0.0, "data": None}      # dashboard cache (saves Firestore reads)
+
+
+def _bust():
+    _CACHE["t"] = 0.0
+
 
 DEFAULT_BRANCHES = ["សាខាខេត្តសៀមរាប", "សាខាខេត្តបាត់ដំបង", "សាខាក្រុងព្រះសីហនុ", "សាខាភ្នំពេញថ្មី"]
 
@@ -167,6 +196,7 @@ class DB:
             "original_qty": 0.0, "stock_add_qty": 0.0, "transfer_qty": 0.0, "sell_qty": 0.0,
             "created_at": _now(), "updated_at": _now(),
         })
+        _bust()
         return ref.id
 
     def update_item(self, item_id, kh, en, floor, corner, image_url, image_public_id,
@@ -176,6 +206,7 @@ class DB:
             "image_url": image_url, "image_public_id": image_public_id,
             "sell_price": sell_price, "unit_price": unit_price, "updated_at": _now(),
         })
+        _bust()
 
     def delete_item(self, item_id):
         if _query("transfer_items", _eq("item_id", item_id)):
@@ -185,9 +216,11 @@ class DB:
             for r in _query(col, _eq("item_id", item_id)):
                 ops.append(("delete", fs.collection(col).document(r["id"])))
         _commit(ops)
+        _bust()
 
     def set_original_qty(self, item_id, qty):
         fs.collection("items").document(item_id).update({"original_qty": qty})
+        _bust()
 
     # ── Pricing matrices ─────────────────────────────────────────────────────
     def _upsert_price(self, item_id, field, key, name, value_key, value, price_date):
@@ -240,6 +273,7 @@ class DB:
         trf = sum(_num(r.get("qty")) for r in _query("transfer_items", _eq("item_id", item_id)))
         sold = sum(_num(r.get("qty")) for r in _query("sales", _eq("item_id", item_id)))
         ref.update({"stock_add_qty": add, "transfer_qty": trf, "sell_qty": sold})
+        _bust()
 
     # ── Purchases / Stock receive ────────────────────────────────────────────
     def get_purchase_receives(self, start_date=None, end_date=None):
@@ -387,7 +421,8 @@ class DB:
         if ref.get().exists:
             raise ValueError("Transfer code already exists")
         ops = [("set", ref, {"branch_name": branch_name, "driver_name": driver_name, "note": note,
-                             "total_cost": round(total_cost, 2), "created_at": _now()})]
+                             "total_cost": round(total_cost, 2), "is_paid": False,
+                             "created_at": _now()})]
         for i in items_list:
             ops.append(("set", fs.collection("transfer_items").document(), {
                 "transfer_code": transfer_code, "item_id": i["item_id"], "qty": _num(i["qty"]),
@@ -412,6 +447,10 @@ class DB:
     def get_transfer(self, code):
         snap = fs.collection("transfers").document(code).get()
         return {**snap.to_dict(), "transfer_code": snap.id} if snap.exists else None
+
+    def set_transfer_paid(self, code, paid):
+        fs.collection("transfers").document(code).update({"is_paid": bool(paid)})
+        _bust()
 
     def get_transfer_items(self, code):
         items = self.items_map()
@@ -464,6 +503,61 @@ class DB:
         low = [i for i in items if i["remain_qty"] <= 5][:15]
         return {"total_items": len(items), "total_stock_value": stock_value,
                 "total_sell_value": sell_value, "low_stock": low}
+
+    def dashboard_data(self, force=False):
+        """Everything the dashboard needs in ONE pass (items + sales streamed once), cached 30 s."""
+        if not force and _CACHE["data"] and time.time() - _CACHE["t"] < 30:
+            return _CACHE["data"]
+        items = self.get_all_items()
+        imap = {i["id"]: i for i in items}
+        today = _today()
+        month = today[:7]
+        days = [(datetime.now() - timedelta(days=n)).strftime("%Y-%m-%d") for n in range(29, -1, -1)]
+        daily = {d: 0.0 for d in days}
+        per_item, total_sales, today_rev, month_rev, month_cost = {}, 0.0, 0.0, 0.0, 0.0
+        for snap in fs.collection("sales").stream():
+            r = snap.to_dict()
+            q = _num(r.get("qty"))
+            rev, cost = q * _num(r.get("sell_price")), q * _num(r.get("unit_price"))
+            day = r.get("sale_date", "")
+            total_sales += rev
+            e = per_item.setdefault(r.get("item_id"), {"qty": 0.0, "revenue": 0.0})
+            e["qty"] += q
+            e["revenue"] += rev
+            if day in daily:
+                daily[day] += rev
+            if day == today:
+                today_rev += rev
+            if day[:7] == month:
+                month_rev += rev
+                month_cost += cost
+        paid_transfers = sum(_num(t.get("total_cost")) for t in _query("transfers", _eq("is_paid", True)))
+        best = []
+        for iid, e in sorted(per_item.items(), key=lambda kv: kv[1]["qty"], reverse=True):
+            it = imap.get(iid)
+            if it and e["qty"] > 0:
+                best.append({"id": iid, "code": it["item_code"], "name": it.get("name_english") or it.get("name_khmer"),
+                             "qty": e["qty"], "revenue": e["revenue"]})
+            if len(best) == 10:
+                break
+        low = sorted([i for i in items if i["remain_qty"] <= LOW_STOCK], key=lambda i: (i["remain_qty"], i["item_code"]))
+        dead = sorted([i for i in items if i["remain_qty"] > 0], key=lambda i: (i["sell_qty"], -i["remain_qty"]))[:10]
+        recent_sales = [{**d.to_dict(), "sale_code": d.id} for d in
+                        fs.collection("invoice_records").order_by("created_at", direction="DESCENDING").limit(5).stream()]
+        recent_transfers = [{**d.to_dict(), "transfer_code": d.id} for d in
+                            fs.collection("transfers").order_by("created_at", direction="DESCENDING").limit(5).stream()]
+        data = {
+            "updated": datetime.now().strftime("%H:%M:%S"), "threshold": LOW_STOCK,
+            "total_items": len(items), "out_of_stock": sum(1 for i in items if i["remain_qty"] <= 0),
+            "stock_value": sum(i["remain_qty"] * i["avg_unit_price"] for i in items),
+            "sales_total": total_sales, "paid_transfers": paid_transfers, "revenue_total": total_sales + paid_transfers,
+            "today_rev": today_rev, "month_rev": month_rev, "month_profit": month_rev - month_cost,
+            "month_margin": ((month_rev - month_cost) / month_rev * 100) if month_rev else 0.0,
+            "daily": [(d, daily[d]) for d in days], "best": best, "dead": dead,
+            "low": low, "recent_sales": recent_sales, "recent_transfers": recent_transfers,
+        }
+        _CACHE.update(t=time.time(), data=data)
+        return data
 
     def sales_report(self, start_date, end_date):
         """Line-level sales between two dates, joined with item names."""
