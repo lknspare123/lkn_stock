@@ -1,5 +1,14 @@
 """utils/helpers.py — Formatting and math utilities (image helpers moved to core/storage.py)."""
-from datetime import datetime
+import os
+from datetime import datetime, timedelta, timezone
+
+# Cambodia time (UTC+7, no daylight saving). Render servers run in UTC, so we
+# never use naive datetime.now(); everything goes through now_local().
+LOCAL_TZ = timezone(timedelta(hours=float(os.environ.get("TZ_OFFSET_HOURS", 7))))
+
+
+def now_local():
+    return datetime.now(LOCAL_TZ)
 
 
 def fmt_currency(value, symbol="$", decimals=2):
@@ -39,11 +48,11 @@ def safe_float(text, default=0.0):
 
 
 def today_str():
-    return datetime.now().strftime("%Y-%m-%d")
+    return now_local().strftime("%Y-%m-%d")
 
 
 def now_str():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return now_local().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def fmt_date(date_str):

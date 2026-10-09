@@ -30,6 +30,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
+from utils.helpers import now_local
+
 
 def _load_credentials_info(raw):
     """Parse the service-account JSON, tolerating common copy/paste damage."""
@@ -78,11 +80,11 @@ DEFAULT_BRANCHES = ["សាខាខេត្តសៀមរាប", "សាខ�
 
 # ── small helpers ────────────────────────────────────────────────────────────
 def _now():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return now_local().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _today():
-    return datetime.now().strftime("%Y-%m-%d")
+    return now_local().strftime("%Y-%m-%d")
 
 
 def _eq(field, value):
@@ -512,7 +514,7 @@ class DB:
         imap = {i["id"]: i for i in items}
         today = _today()
         month = today[:7]
-        days = [(datetime.now() - timedelta(days=n)).strftime("%Y-%m-%d") for n in range(29, -1, -1)]
+        days = [(now_local() - timedelta(days=n)).strftime("%Y-%m-%d") for n in range(29, -1, -1)]
         daily = {d: 0.0 for d in days}
         per_item, total_sales, today_rev, month_rev, month_cost = {}, 0.0, 0.0, 0.0, 0.0
         for snap in fs.collection("sales").stream():
@@ -547,7 +549,7 @@ class DB:
         recent_transfers = [{**d.to_dict(), "transfer_code": d.id} for d in
                             fs.collection("transfers").order_by("created_at", direction="DESCENDING").limit(5).stream()]
         data = {
-            "updated": datetime.now().strftime("%H:%M:%S"), "threshold": LOW_STOCK,
+            "updated": now_local().strftime("%H:%M:%S"), "threshold": LOW_STOCK,
             "total_items": len(items), "out_of_stock": sum(1 for i in items if i["remain_qty"] <= 0),
             "stock_value": sum(i["remain_qty"] * i["avg_unit_price"] for i in items),
             "sales_total": total_sales, "paid_transfers": paid_transfers, "revenue_total": total_sales + paid_transfers,
