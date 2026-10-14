@@ -239,21 +239,49 @@ def item_customer_delete(item_id):
     return redirect(url_for("item_edit", item_id=item_id) + "#prices")
 
 
-# ── Main stock ───────────────────────────────────────────────────────────────
+# ── Main stock (master-detail) ───────────────────────────────────────────────
 @app.get("/stock")
 def stock():
-    q = (request.args.get("q") or "").strip().lower()
-    rows = db.get_all_items()
-    if q:
-        rows = [r for r in rows if q in (r["item_code"] + r.get("name_khmer", "") + r.get("name_english", "")).lower()]
-    return render_template("stock.html", rows=rows, q=q)
+    rows = []
+    for i in db.get_all_items():
+        u0, u1, ud = i["min_unit_price"], i["max_unit_price"], False
+        if u0 is None and i["unit_price"] > 0:           # no distributor yet -> fall back to default cost
+            u0 = u1 = i["unit_price"]; ud = True
+        s0, s1, sd = i["min_sell_price"], i["max_sell_price"], False
+        if s0 is None and i["sell_price"] > 0:           # no customer price -> fall back to default sell
+            s0 = s1 = i["sell_price"]; sd = True
+        rem = i["remain_qty"]
+        rows.append({
+            "id": i["id"], "code": i["item_code"], "kh": i.get("name_khmer", ""), "en": i.get("name_english", ""),
+            "floor": i.get("floor", ""), "corner": i.get("corner", ""),
+            "original": i["original_qty"], "added": i["stock_add_qty"], "on_hand": i["on_hand_qty"],
+            "sold": i["sell_qty"], "transferred": i["transfer_qty"], "remain": rem,
+            "u0": u0, "u1": u1, "u_default": ud, "s0": s0, "s1": s1, "s_default": sd,
+            "total_cost": rem * ((u0 + u1) / 2) if u0 is not None else 0.0,
+            "total_sell": rem * ((s0 + s1) / 2) if s0 is not None else 0.0,
+            "image": i.get("image_url", ""),
+            "distributors": sorted([{"name": x["distributor_name"], "cost": x["cost_price"],
+                                     "date": x.get("last_price_date", "")} for x in i["distributors"]],
+                                   key=lambda x: x["name"].lower()),
+            "customers": sorted([{"name": x["customer_name"], "price": x["special_sell_price"],
+                                  "date": x.get("last_price_date", "")} for x in i["customer_prices"]],
+                                key=lambda x: x["name"].lower()),
+        })
+    return render_template("stock.html", data={"rows": rows, "sel": request.args.get("sel", "")})
 
 
 @app.post("/stock/<item_id>/original")
 def stock_set_original(item_id):
     db.set_original_qty(item_id, safe_float(request.form.get("original_qty")))
     flash("Opening quantity updated.", "ok")
-    return redirect(url_for("stock", q=request.form.get("q", "")))
+    return redirect(url_for("stock", sel=item_id))
+
+
+@app.get("/api/items/<item_id>/history")
+def item_history(item_id):
+    return jsonify([{"date": h.get("receive_date", ""), "invoice": h.get("invoice_code", ""),
+                     "distributor": h.get("distributor_name", ""), "qty": h.get("qty_receive", 0),
+                     "price": h.get("unit_price", 0)} for h in db.get_item_purchase_history(item_id)])
 
 
 # ── Stock receive (purchase invoices) ────────────────────────────────────────
