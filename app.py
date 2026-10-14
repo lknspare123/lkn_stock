@@ -6,7 +6,7 @@ import hmac
 from datetime import datetime, timedelta
 
 from flask import (Flask, render_template, request, redirect, url_for,
-                   session, flash, jsonify, abort)
+                   session, flash, jsonify, abort, send_from_directory)
 
 from core.firebase_db import DB
 from core import storage
@@ -19,6 +19,8 @@ app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=14)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+
 
 application = app  # lets Render's default "gunicorn app:application" work too
 
@@ -51,7 +53,7 @@ def inject_nav():
 # ── Auth ─────────────────────────────────────────────────────────────────────
 @app.before_request
 def require_login():
-    if request.endpoint in ("login", "static", "healthz"):
+    if request.endpoint in ("login", "static", "healthz", "favicon"):
         return
     if not session.get("auth"):
         return redirect(url_for("login", next=request.path))
@@ -60,6 +62,12 @@ def require_login():
 @app.get("/healthz")
 def healthz():
     return "ok"
+
+
+@app.get("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, "static"),
+                               "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -107,28 +115,9 @@ def date_range():
 
 
 # ── Dashboard ────────────────────────────────────────────────────────────────
-def build_chart(daily):
-    """Server-side SVG bar chart geometry (no JS / no external libraries)."""
-    W, H, PB, PT = 720, 180, 22, 10
-    n = len(daily)
-    mx = max([v for _, v in daily] + [0]) or 1
-    bw = W / n
-    bars, ticks = [], []
-    for i, (d, v) in enumerate(daily):
-        h = (H - PB - PT) * v / mx
-        bars.append({"x": round(i * bw + bw * 0.18, 1), "w": round(bw * 0.64, 1),
-                     "y": round(H - PB - max(h, 1.5 if v else 0), 1), "h": round(max(h, 1.5 if v else 0), 1),
-                     "tip": f"{fmt_date(d)} — {fmt_currency(v)}"})
-        if i % 5 == 0 or i == n - 1:
-            ticks.append({"x": round(i * bw + bw / 2, 1), "label": d[5:].replace("-", "/")})
-    return {"w": W, "h": H, "base": H - PB, "bars": bars, "ticks": ticks, "max": fmt_currency(mx)}
-
-
 @app.get("/")
 def dashboard():
-    d = db.dashboard_data(force=bool(request.args.get("refresh")))
-    best_max = max([b["qty"] for b in d["best"]] + [1])
-    return render_template("dashboard.html", d=d, chart=build_chart(d["daily"]), best_max=best_max)
+    return render_template("dashboard.html", s=db.dashboard_stats())
 
 
 # ── Items ────────────────────────────────────────────────────────────────────
@@ -239,49 +228,21 @@ def item_customer_delete(item_id):
     return redirect(url_for("item_edit", item_id=item_id) + "#prices")
 
 
-# ── Main stock (master-detail) ───────────────────────────────────────────────
+# ── Main stock ───────────────────────────────────────────────────────────────
 @app.get("/stock")
 def stock():
-    rows = []
-    for i in db.get_all_items():
-        u0, u1, ud = i["min_unit_price"], i["max_unit_price"], False
-        if u0 is None and i["unit_price"] > 0:           # no distributor yet -> fall back to default cost
-            u0 = u1 = i["unit_price"]; ud = True
-        s0, s1, sd = i["min_sell_price"], i["max_sell_price"], False
-        if s0 is None and i["sell_price"] > 0:           # no customer price -> fall back to default sell
-            s0 = s1 = i["sell_price"]; sd = True
-        rem = i["remain_qty"]
-        rows.append({
-            "id": i["id"], "code": i["item_code"], "kh": i.get("name_khmer", ""), "en": i.get("name_english", ""),
-            "floor": i.get("floor", ""), "corner": i.get("corner", ""),
-            "original": i["original_qty"], "added": i["stock_add_qty"], "on_hand": i["on_hand_qty"],
-            "sold": i["sell_qty"], "transferred": i["transfer_qty"], "remain": rem,
-            "u0": u0, "u1": u1, "u_default": ud, "s0": s0, "s1": s1, "s_default": sd,
-            "total_cost": rem * ((u0 + u1) / 2) if u0 is not None else 0.0,
-            "total_sell": rem * ((s0 + s1) / 2) if s0 is not None else 0.0,
-            "image": i.get("image_url", ""),
-            "distributors": sorted([{"name": x["distributor_name"], "cost": x["cost_price"],
-                                     "date": x.get("last_price_date", "")} for x in i["distributors"]],
-                                   key=lambda x: x["name"].lower()),
-            "customers": sorted([{"name": x["customer_name"], "price": x["special_sell_price"],
-                                  "date": x.get("last_price_date", "")} for x in i["customer_prices"]],
-                                key=lambda x: x["name"].lower()),
-        })
-    return render_template("stock.html", data={"rows": rows, "sel": request.args.get("sel", "")})
+    q = (request.args.get("q") or "").strip().lower()
+    rows = db.get_all_items()
+    if q:
+        rows = [r for r in rows if q in (r["item_code"] + r.get("name_khmer", "") + r.get("name_english", "")).lower()]
+    return render_template("stock.html", rows=rows, q=q)
 
 
 @app.post("/stock/<item_id>/original")
 def stock_set_original(item_id):
     db.set_original_qty(item_id, safe_float(request.form.get("original_qty")))
     flash("Opening quantity updated.", "ok")
-    return redirect(url_for("stock", sel=item_id))
-
-
-@app.get("/api/items/<item_id>/history")
-def item_history(item_id):
-    return jsonify([{"date": h.get("receive_date", ""), "invoice": h.get("invoice_code", ""),
-                     "distributor": h.get("distributor_name", ""), "qty": h.get("qty_receive", 0),
-                     "price": h.get("unit_price", 0)} for h in db.get_item_purchase_history(item_id)])
+    return redirect(url_for("stock", q=request.form.get("q", "")))
 
 
 # ── Stock receive (purchase invoices) ────────────────────────────────────────
@@ -431,13 +392,6 @@ def transfer_new():
 def transfer_detail(code):
     t = db.get_transfer(code) or abort(404)
     return render_template("transfer_detail.html", t=t, lines=db.get_transfer_items(code))
-
-
-@app.post("/transfers/<code>/paid")
-def transfer_paid(code):
-    db.set_transfer_paid(code, request.form.get("paid") == "1")
-    flash("Payment status updated.", "ok")
-    return redirect(request.referrer or url_for("transfer_detail", code=code))
 
 
 @app.post("/transfers/<code>/delete")
