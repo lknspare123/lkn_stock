@@ -1,15 +1,15 @@
-{% extends "base.html" %}{% block title %}Reports{% endblock %}{% block content %}
-<h1>Reports</h1>
-<form class="bar" method="get"><div><label>From</label><input type="date" name="start" value="{{ start }}"></div><div><label>To</label><input type="date" name="end" value="{{ end }}"></div><button class="btn sec">Run</button></form>
-<div class="grid g4">
-  <div class="card stat"><div class="l">Sales revenue</div><div class="v">{{ revenue|currency }}</div></div>
-  <div class="card stat"><div class="l">Cost of goods sold</div><div class="v">{{ cost|currency }}</div></div>
-  <div class="card stat"><div class="l">Profit</div><div class="v" style="color:{{ 'var(--ok)' if profit>=0 else 'var(--bad)' }}">{{ profit|currency }} <small class="muted">({{ margin }}%)</small></div></div>
-  <div class="card stat"><div class="l">Purchases received</div><div class="v">{{ purchases|currency }}</div></div>
-  <div class="card stat"><div class="l">Branch transfers (cost)</div><div class="v">{{ transfers|currency }}</div></div>
-</div>
-<h2>Top items by revenue</h2>
-<div class="tw"><table><thead><tr><th>Code</th><th>Name</th><th class="num">Qty</th><th class="num">Revenue</th><th class="num">Profit</th></tr></thead><tbody>
-{% for t in top %}<tr><td>{{ t.code }}</td><td>{{ t.name }}</td><td class="num">{{ t.qty|qty }}</td><td class="num">{{ t.revenue|currency }}</td><td class="num">{{ (t.revenue - t.cost)|currency }}</td></tr>
-{% else %}<tr><td colspan="5" class="muted">No sales in this range.</td></tr>{% endfor %}</tbody></table></div>
-{% endblock %}
+{% extends "base.html" %}{% block title %}របាយការណ៍{% endblock %}{% block content %}
+<h1>📊 របាយការណ៍ <span class="sp"></span><a class="btn sec sm no-print" id="export" href="#">⬇ Export Excel</a></h1>
+<div class="ptabs" id="tabs" style="flex-wrap:wrap">
+  <button class="ptab on" data-t="stock">📦 ស្តុក</button><button class="ptab" data-t="receives">📥 ទទួលស្តុក</button><button class="ptab" data-t="sales">📤 ការលក់</button>
+  <button class="ptab" data-t="transfers">🚚 ផ្ទេរសាខា</button><button class="ptab" data-t="distributors">🏭 អ្នកផ្គត់ផ្គង់</button><button class="ptab" data-t="customers">👥 អតិថិជន</button>
+  <button class="ptab" data-t="branches">🏢 សាខា</button><button class="ptab" data-t="profit">💹 ប្រាក់ចំណេញ</button></div>
+<div class="filtbar no-print">
+  <div><label>ចាប់ពី</label><input id="r-start" type="date" value="{{ start }}"></div><div><label>ដល់</label><input id="r-end" type="date" value="{{ end }}"></div>
+  <div><label>ស្ថានភាពទូទាត់</label><select id="r-paid">{% for k, v in paid_filters.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+  <button class="btn" id="r-go">🔄 បង្ហាញរបាយការណ៍</button><button class="btn sec" id="r-print">🖨 បោះពុម្ព</button>
+  <button class="btn sec" id="r-view" hidden>🔎 មើលវិក្កយបត្រ</button><button class="btn sec" id="r-detail" hidden>📋 មើលលម្អិត</button></div>
+<div id="r-sum" class="sumbox accent">…</div>
+<div class="tw selectable reportbox" style="max-height:calc(100vh - 380px)"><table><thead><tr id="r-head"></tr></thead><tbody id="r-body"></tbody></table></div>
+<p class="small-note" id="r-hint"></p>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script src="{{ url_for('static', filename='reports.js') }}"></script>{% endblock %}

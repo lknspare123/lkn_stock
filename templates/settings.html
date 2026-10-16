@@ -1,6 +1,27 @@
-{% extends "base.html" %}{% block title %}Settings{% endblock %}{% block content %}
-<h1>Settings</h1>
-<div class="card" style="max-width:520px"><h2 style="margin-top:0">Branches</h2>
-<table><tbody>{% for b in branches %}<tr><td>{{ b.name }}</td><td class="num"><form class="inline" method="post" action="{{ url_for('branch_delete', branch_id=b.id) }}" onsubmit="return confirm('Remove this branch?')"><button class="btn-x">✕</button></form></td></tr>{% endfor %}</tbody></table>
-<form class="bar" method="post" style="margin:12px 0 0"><input name="name" placeholder="New branch name" required><button class="btn sm">Add</button></form></div>
-{% endblock %}
+{% extends "base.html" %}{% block title %}ការកំណត់{% endblock %}{% block content %}
+<h1>⚙ ការកំណត់ប្រព័ន្ធ</h1>
+<div class="grid g2">
+  <div class="card"><h3>💾 បម្រុងទុកទិន្នន័យ (Backup)</h3>
+    <p class="small-note">ទាញយកទិន្នន័យទាំងអស់ (ទំនិញ វិក្កយបត្រ អតិថិជន សាខា…) ជាឯកសារ JSON មួយ។ រូបភាពរក្សាទុកនៅ Cloudinary ដូច្នេះមិនចាំបាច់ចម្លងទេ។</p>
+    <form method="post" action="{{ url_for('settings_backup') }}"><div class="fld"><label>ពាក្យសម្ងាត់</label><input type="password" name="password" required></div><button class="btn">⬇ ទាញយកទិន្នន័យបម្រុង</button></form></div>
+  <div class="card"><h3>♻ ស្ដារទិន្នន័យ (Restore)</h3>
+    <p class="small-note">⚠ ទិន្នន័យបច្ចុប្បន្នទាំងអស់នឹងត្រូវជំនួសដោយឯកសារបម្រុង។ សូមទាញយក Backup ថ្មីមុនសិន។</p>
+    <form method="post" action="{{ url_for('settings_restore') }}" enctype="multipart/form-data" id="restore-form"><div class="fld"><label>ឯកសារបម្រុង (.json)</label><input type="file" name="backup" accept=".json,application/json" required></div>
+      <div class="fld"><label>ពាក្យសម្ងាត់</label><input type="password" name="password" required></div><button class="btn sec">♻ ស្ដារទិន្នន័យ</button></form></div>
+</div>
+<div class="grid g2" style="margin-top:16px">
+  <div class="card"><h3>🏢 គ្រប់គ្រងសាខា</h3>
+    <form method="post" style="display:flex;gap:8px;margin-bottom:12px"><input name="name" placeholder="ឈ្មោះសាខាថ្មី" required style="flex:1"><button class="btn">＋ បន្ថែម</button></form>
+    <div class="tw short"><table><tbody>{% for b in branches %}<tr><td>{{ b.name }}</td><td class="num"><form method="post" action="{{ url_for('branch_delete', branch_id=b.id) }}" class="inline" onsubmit="return confirm('លុបសាខា {{ b.name }}?')"><button class="btn-x" title="លុប">🗑</button></form></td></tr>{% else %}<tr><td class="muted">មិនមានសាខា</td></tr>{% endfor %}</tbody></table></div></div>
+  <div class="card" style="border-color:var(--bad)"><h3 style="color:var(--bad)">🔥 លុបទិន្នន័យទាំងអស់ (Reset)</h3>
+    <p class="small-note">លុបទំនិញ វិក្កយបត្រ អតិថិជន ប័ណ្ណផ្ទេរ… ទាំងអស់ជាអចិន្ត្រៃយ៍។ សាខាត្រូវបានរក្សាទុក។ <b>មិនអាចត្រឡប់វិញបានទេ!</b></p>
+    <button class="btn bad" id="reset">🔥 លុបទិន្នន័យទាំងអស់…</button></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>ℹ អំពីកម្មវិធី</h3><div class="mrow"><span>កម្មវិធី</span><b>LKN Stock (Web)</b></div><div class="mrow"><span>កំណែ</span><b>{{ app_version }}</b></div><div class="mrow"><span>អ្នកបង្កើត</span><b>{{ author }}</b></div><div class="mrow"><span>©</span><b>{{ year }}</b></div></div>
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script>
+document.getElementById('restore-form').addEventListener('submit', async e => { if (e.target.dataset.ok) return; e.preventDefault();
+  if (await UI.confirm('ទិន្នន័យបច្ចុប្បន្នទាំងអស់នឹងត្រូវជំនួសដោយឯកសារបម្រុង។ បន្តស្ដារឬទេ?', {danger: true, yes: 'ស្ដារ'})) { e.target.dataset.ok = 1; e.target.submit(); } });
+document.getElementById('reset').addEventListener('click', () => {
+  UI.modal({title: '🔥 លុបទិន្នន័យទាំងអស់', width: 440, sticky: true, body: '<p class="dlg-msg">សកម្មភាពនេះលុបទិន្នន័យទាំងអស់ជាអចិន្ត្រៃយ៍។ សូមបញ្ជាក់ដោយបញ្ចូលពាក្យសម្ងាត់ និងវាយពាក្យ <b>DELETE</b>។</p><div class="fld"><label>ពាក្យសម្ងាត់</label><input id="rp" type="password"></div><div class="fld"><label>វាយ DELETE</label><input id="rw" autocomplete="off"></div>',
+    buttons: [{label: 'បោះបង់', cls: 'sec'}, {label: '🔥 លុបទាំងអស់', cls: 'bad', onClick: async d => { const r = await UI.api('/settings/reset', {password: UI.$('#rp', d.el).value, word: UI.$('#rw', d.el).value}); UI.toast('បានលុបទិន្នន័យទាំងអស់រួចរាល់។'); setTimeout(() => location.reload(), 700); }}]}); });
+</script>{% endblock %}

@@ -7,7 +7,7 @@
   <div class="card stat"><div class="l">ប្រភេទមុខទំនិញសរុប</div><div class="v">{{ d.total_items|qty }}</div>
     <div class="sub">{{ d.out_of_stock|qty }} out of stock</div></div>
   <div class="card stat"><div class="l">តម្លៃដើមទំនិញក្នុងស្តុកសរុប</div><div class="v">{{ d.stock_value|currency }}</div>
-    <div class="sub">Valued at average cost</div></div>
+    <div class="sub">Valued at mid-range cost</div></div>
   <div class="card stat"><div class="l">ទឹកប្រាក់លក់ចេញសរុប</div><div class="v" style="color:var(--ok)">{{ d.revenue_total|currency }}</div>
     <div class="sub">Invoices {{ d.sales_total|currency }} · Paid transfers {{ d.paid_transfers|currency }}</div></div>
   <a class="card stat" href="#low" style="color:inherit"><div class="l">ការព្រមានទំនិញជិតអស់ពីស្តុក</div><div class="v" style="color:var(--bad)">{{ d.low|length }}</div>

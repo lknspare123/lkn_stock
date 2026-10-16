@@ -1,22 +1,29 @@
-{% extends "base.html" %}{% block title %}Print Labels{% endblock %}{% block content %}
-<div class="no-print">
-<h1>Print Labels <span class="sp"></span><button class="btn" id="go">🖨 Print selected</button></h1>
-<div class="bar"><input id="filter" placeholder="Filter…" style="min-width:240px"><div><label>Copies each</label><input id="copies" type="number" min="1" value="1" style="width:80px"></div></div>
-<div class="tw"><table id="tbl"><thead><tr><th><input type="checkbox" id="all" style="width:auto"></th><th>Code</th><th>Name</th><th class="num">Price</th></tr></thead><tbody>
-{% for i in items %}<tr data-id="{{ i.id }}"><td><input type="checkbox" class="pick" style="width:auto"></td><td>{{ i.code }}</td><td>{{ i.kh }} {{ i.en }}</td><td class="num">${{ '%.2f'|format(i.sell_price) }}</td></tr>{% endfor %}
-</tbody></table></div></div>
-<div class="sheet print-only" id="sheet"></div>
+{% extends "base.html" %}{% block title %}បោះពុម្ពស្លាក{% endblock %}{% block content %}
+<style>
+#print-area{display:none}
+@media print{
+  @page{size:A4;margin:0}
+  main>*:not(#print-area){display:none!important}
+  main{margin:0!important;padding:0!important;max-width:none!important}
+  #print-area{display:block!important}
+  #print-area .lbl-sheet{width:210mm;height:280mm;border:0;page-break-after:always;break-after:page;margin:0;background:#fff;grid-auto-rows:40mm}
+  #print-area .lbl{border:.2mm solid #bbb}
+}
+</style>
+<h1>🏷 បោះពុម្ពស្លាកទំនិញ</h1>
+<div class="split wide-r">
+  <div class="card">
+    <h3>ស្កែនកូដ / បញ្ចូលកូដទំនិញ</h3>
+    <div class="suggest-wrap"><input id="scan" style="width:100%" autocomplete="off" placeholder="🔍 ស្កែនបាកូដ ឬវាយកូដទំនិញ រួចចុច Enter (ស្កែនម្តង = ១ ស្លាក)" autofocus></div>
+    <div class="row2" style="margin-top:12px"><div class="fld"><label>ទំហំអក្សរឈ្មោះ</label><select id="fs">{% for s in range(12,19) %}<option {{ 'selected' if s==14 }}>{{ s }}</option>{% endfor %}</select></div>
+      <div class="fld"><label>សរុបស្លាក</label><div style="font-size:22px;font-weight:700" id="total">0</div></div></div>
+    <div class="tw short selectable" style="max-height:340px"><table><thead><tr><th>កូដ</th><th>ឈ្មោះ</th><th class="num">ចំនួនស្លាក</th><th></th></tr></thead><tbody id="queue"></tbody></table></div>
+    <div class="btnrow" style="margin-top:12px"><button class="btn" id="print">🖨 បោះពុម្ព</button><button class="btn sec" id="pdf">📄 រក្សាទុកជា PDF</button><button class="btn sec" id="clear">🧹 សម្អាត</button></div>
+    <p class="small-note">«បោះពុម្ព» / «PDF» បើកផ្ទាំងបោះពុម្ពរបស់ browser — ជ្រើសរើស «Save as PDF» ដើម្បីរក្សាទុក។ ទំហំ A4 · ៣ ជួរដេក × ៧ ជួរឈរ (២១ ស្លាក/ទំព័រ)។</p>
+  </div>
+  <div class="card"><div class="chead"><b>មើលជាមុន (Preview)</b><div style="display:flex;gap:6px;align-items:center"><button class="btn sec sm" id="prev">◀</button><span id="pg" class="muted">1 / 1</span><button class="btn sec sm" id="next">▶</button></div></div>
+    <div style="overflow:auto"><div id="preview"></div></div></div>
+</div>
+<div id="print-area"></div>
 <script type="application/json" id="items-data">{{ items|tojson }}</script>
-<script>
-const ITEMS=Object.fromEntries(JSON.parse(document.getElementById('items-data').textContent).map(i=>[i.id,i]));
-const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-document.getElementById('all').onchange=e=>document.querySelectorAll('#tbl tbody tr:not([hidden]) .pick').forEach(c=>c.checked=e.target.checked);
-document.getElementById('filter').oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('#tbl tbody tr').forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q));};
-document.getElementById('go').onclick=()=>{
-  const n=Math.max(1,+document.getElementById('copies').value||1);let html='';
-  document.querySelectorAll('.pick:checked').forEach(c=>{const i=ITEMS[c.closest('tr').dataset.id];
-    for(let k=0;k<n;k++)html+=`<div class="label">${i.image?`<img src="${esc(i.image)}"><br>`:''}<b>${esc(i.kh||i.en)}</b><br>${esc(i.en)}<br>${esc(i.code)}<div class="p">$${i.sell_price.toFixed(2)}</div></div>`;});
-  if(!html)return alert('Select at least one item.');
-  document.getElementById('sheet').innerHTML=html;print();};
-</script>
-{% endblock %}
+{% endblock %}{% block scripts %}<script src="{{ url_for('static', filename='ui.js') }}"></script><script src="{{ url_for('static', filename='labels.js') }}"></script>{% endblock %}
