@@ -100,8 +100,6 @@
     $('#p-meta').innerHTML = meta('ឈ្មោះខ្មែរ', esc(r.kh) || '–') + meta('ឈ្មោះអង់គ្លេស', esc(r.en) || '–') +
       meta('ទីតាំងផ្ទុក', `ជាន់ ${esc(r.floor) || '-'} / ជួរ ${esc(r.corner) || '-'}`) +
       meta('អ្នកផ្គត់ផ្គង់', esc(r.suppliers) || '–') + meta('បរិមាណស្តុក', `នៅសល់ ${qty(r.remain)} ឯកតា`, r.remain <= 5 ? 'bad' : 'info');
-    const f = $('#p-open'); f.action = `/stock/${r.id}/original`; f.original_qty.value = r.original;
-    $('#p-edit').href = `/items/${r.id}`;
     $('#p-search').value = ''; renderMatrix();
     if (scroll) { const tr = document.querySelector(`#tbody tr[data-id="${id}"]`); tr && tr.scrollIntoView({block: 'center'}); }
   }

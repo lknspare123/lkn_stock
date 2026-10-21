@@ -161,3 +161,17 @@ Alternative without a URL: `python scripts/backup_to_drive.py` (Render Cron Job 
    row counts per table, and the exact items / invoices that exist on only one side.
 2. **Make them identical:** `python scripts/migrate_sqlite_to_neon.py "D:\path\stock.db" --mirror` — shows what will be deleted from the web
    and asks you to type `MIRROR`. Anything created only in the web is deleted, so download a `.db` backup from Settings first.
+
+## Uploading item pictures from your PC to Cloudinary
+
+The migration / `--mirror` copy the data only. To upload the picture files (item pictures) and link them to the items in Neon:
+
+```powershell
+$env:DATABASE_URL   = 'postgresql://...'
+$env:CLOUDINARY_URL = 'cloudinary://API_KEY:API_SECRET@CLOUD_NAME'
+python scripts/upload_local_images.py "D:\path\to\stock.db" "D:\path\to\assets\images\items" --dry-run   # preview
+python scripts/upload_local_images.py "D:\path\to\stock.db" "D:\path\to\assets\images\items"             # upload
+```
+
+Items that already have a picture are skipped (`--force` re-uploads them). Missing files are listed in `images_missing.txt`,
+failed uploads in `images_failed.txt`; running the same command again retries only what is still missing.

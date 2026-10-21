@@ -41,6 +41,7 @@ db = DB()
 NAV = [
     ("ផ្ទាំងគ្រប់គ្រង", "dashboard", "dashboard", "dashboard"),
     ("ទិន្នន័យមុខទំនិញ", "items", "items", "item"),
+    ("ស្តុកចម្បង", "stock", "stock", "stock"),
     ("ទទួលស្តុក", "receive_list", "receive_list", "receive"),
     ("បោះពុម្ពស្លាក", "labels", "labels", "label"),
     ("ការលក់", "sales_list", "sales_list", "sale"),
@@ -379,10 +380,31 @@ def item_history(item_id):
                      "price": h.get("unit_price", 0)} for h in db.get_item_purchase_history(item_id)])
 
 
-# The old "Main Stock" page was removed: everything is done on the Items page. Old bookmarks still work.
+# ── Main stock (master-detail) ───────────────────────────────────────────────
 @app.get("/stock")
 def stock():
-    return redirect(url_for("items"))
+    rows = []
+    for i in db.get_all_items():
+        u0, u1 = i["min_unit_price"], i["max_unit_price"]
+        s0, s1 = i["min_sell_price"], i["max_sell_price"]
+        rem = i["remain_qty"]
+        rows.append({
+            "id": i["id"], "code": i["item_code"], "kh": i.get("name_khmer", ""), "en": i.get("name_english", ""),
+            "floor": i.get("floor", ""), "corner": i.get("corner", ""),
+            "original": i["original_qty"], "added": i["stock_add_qty"], "on_hand": i["on_hand_qty"],
+            "sold": i["sell_qty"], "transferred": i["transfer_qty"], "remain": rem,
+            "u0": u0, "u1": u1, "s0": s0, "s1": s1,
+            "total_cost": rem * ((u0 + u1) / 2) if u0 is not None else 0.0,
+            "total_sell": rem * ((s0 + s1) / 2) if s0 is not None else 0.0,
+            "image": i.get("image_url", ""),
+            "distributors": sorted([{"name": x["distributor_name"], "cost": x["cost_price"],
+                                     "date": x.get("last_price_date", "")} for x in i["distributors"]],
+                                   key=lambda x: x["name"].lower()),
+            "customers": sorted([{"name": x["customer_name"], "price": x["special_sell_price"],
+                                  "date": x.get("last_price_date", "")} for x in i["customer_prices"]],
+                                key=lambda x: x["name"].lower()),
+        })
+    return render_template("stock.html", data={"rows": rows, "sel": request.args.get("sel", "")})
 
 
 # ── Stock receive (purchase invoices) ────────────────────────────────────────
